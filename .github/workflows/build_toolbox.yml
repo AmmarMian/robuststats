@@ -15,6 +15,7 @@ jobs:
         python-version: 3.9
     - name: Install dependencies
       run: |
+        $CONDA/bin/conda config --add channels conda-forge
         $CONDA/bin/conda install -y --file requirements.txt
     - name: Install pymanopt and pyCovariance
       run: |
