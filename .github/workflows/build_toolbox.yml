@@ -8,7 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
@@ -23,7 +26,7 @@ jobs:
         python setup.py install
         cd ../pyCovariance
         python setup.py install
-    - name: Insall robuststats
+    - name: Install robuststats
       run: python setup.py install
     - name: Lint with flake8
       run: |
