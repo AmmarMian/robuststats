@@ -1,6 +1,6 @@
 [submodule "submodules/pymanopt_fork"]
 	path = submodules/pymanopt_fork
-	url = https://github.com/antoinecollas/pymanopt
+	url = https://github.com/AmmarMian/pymanopt/
 [submodule "submodules/pyCovariance"]
 	path = submodules/pyCovariance
-	url = https://github.com/antoinecollas/pyCovariance
+	url = https://github.com/AmmarMian/pyCovariance
