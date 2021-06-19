@@ -1,9 +1,10 @@
 # create conda environment
-conda create -n robuststats --yes 
+conda create -n robust_stats --yes 
 eval "$(conda shell.bash hook)"  # bug fix: https://github.com/conda/conda/issues/7980#issuecomment-492784093 
-conda activate robuststats
+conda activate robust_stats
 
 # Dependencies
+conda config --add channels conda-forge
 conda install -y --file requirements.txt
 
 # install pymanopt fork
