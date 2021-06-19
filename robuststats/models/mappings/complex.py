@@ -11,7 +11,7 @@ Copyright (c) 2021 Université Savoie Mont-Blanc
 '''
 
 import numpy as np
-import numpy.linalg as la
+# import numpy.linalg as la
 import logging
 
 
@@ -69,7 +69,7 @@ def arraytocomplex(a):
             return a[:p] + 1j*a[p:]
         elif a.ndim == 2:
             p = int(a.shape[1]/2)
-            return np.vstack(a[:,:p] + 1j*a[:,p:])
+            return np.vstack(a[:, :p] + 1j*a[:, p:])
         else:
             raise AttributeError("Input array format not supported")
     else:
@@ -125,14 +125,15 @@ def covariancestocomplex(a):
     Raises
     ------
     AttributeError
-        when input array format is not of dimension 2 or shape of input is not even.
+        when input array format is not of dimension 2 or shape is not even.
     """
     if np.iscomplexobj(a):
         logging.debug("Input array is already complex, returning input.")
         return a
-    elif a.ndim == 3 and a.shape[1]%2==0:
+    elif a.ndim == 3 and a.shape[1] % 2 == 0:
         n_samples, n_features, _ = a.shape
-        a_complex = np.zeros((n_samples, int(n_features/2), int(n_features/2)), dtype=complex)
+        a_complex = np.zeros(
+            (n_samples, int(n_features/2), int(n_features/2)), dtype=complex)
         for i in range(n_samples):
             a_complex[i] = covariancetocomplex(a[i])
         return a_complex
@@ -161,7 +162,7 @@ def covariancetoreal(a):
 
     if np.iscomplexobj(a):
         if iscovariance(a):
-            real_matrix = .5 * np.block([[np.real(a), -np.imag(a)], 
+            real_matrix = .5 * np.block([[np.real(a), -np.imag(a)],
                                         [np.imag(a), np.real(a)]])
             return real_matrix
         else:
@@ -173,8 +174,8 @@ def covariancetoreal(a):
 
 def covariancetocomplex(a):
     """Return complex matrix from its real equivalent in input.
-    Input can be any transform of a matrix obtained thanks to function covariancetoreal or 
-    any square amtrix whose shape is an even number.
+    Input can be any transform of a matrix obtained thanks to function
+    covariancetoreal or any square amtrix whose shape is an even number.
 
     Parameters
     ----------
@@ -189,17 +190,17 @@ def covariancetocomplex(a):
     Raises
     ------
     AttributeError
-        when input array format is not of dimension 2 or shape of input is not even.
+        when input array format is not of dimension 2 or shape is not even.
     """
 
     if not np.iscomplexobj(a):
-        if iscovariance(a) and len(a)%2==0:
+        if iscovariance(a) and len(a) % 2 == 0:
             p = int(len(a)/2)
-            complex_matrix = 2 * a[:p,:p] + 2j*a[p:,:p]
+            complex_matrix = 2 * a[:p, :p] + 2j*a[p:, :p]
             return complex_matrix
         else:
             raise AttributeError("Input array format not supported.")
-        
+
     else:
         logging.debug("Input is already a complex array, returning input.")
         return a
@@ -220,11 +221,12 @@ def iscovariance(a):
         Return True if the input array is a square matrix.
     """
 
-    return (a.ndim==2) and (a.shape[0] == a.shape[1])
+    return (a.ndim == 2) and (a.shape[0] == a.shape[1])
 
 
 def check_Hermitian(a, rtol=1e-05, atol=1e-08):
-    """Check wheter the matrix a in input is a Hermitian matrix to a given precision.
+    """Check wheter the matrix a in input is a Hermitian matrix to
+    a given precision.
 
     Parameters
     ----------
@@ -239,7 +241,6 @@ def check_Hermitian(a, rtol=1e-05, atol=1e-08):
     -------
     bool
         Returns True if the input array is Hermitian up to the given precision.
-    """  
-  
-    return np.allclose(a, np.conj(a.T), rtol=rtol, atol=atol)
+    """
 
+    return np.allclose(a, np.conj(a.T), rtol=rtol, atol=atol)

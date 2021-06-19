@@ -9,17 +9,18 @@ Modified By: Ammar Mian
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
 '''
-from robuststats.models.mappings.complex import check_Hermitian, iscovariance, \
+from robuststats.models.mappings.complex import check_Hermitian, iscovariance,\
             covariancetoreal, covariancetocomplex, covariancestoreal, \
             covariancestocomplex, arraytoreal, arraytocomplex
 from pyCovariance.generation_data import generate_complex_covariance
-from robuststats.utils.verbose import matprint
+# from robuststats.utils.verbose import matprint
 import numpy.random as rnd
 import numpy.testing as np_test
 import numpy as np
 
+
 def test_check_Hermitian():
-    seed=761
+    seed = 761
     rnd.seed(seed)
 
     a = np.random.randn(17, 17) + 1j*np.random.randn(17, 17)
@@ -30,7 +31,7 @@ def test_check_Hermitian():
 
 
 def test_iscovariance():
-    seed=761
+    seed = 761
     rnd.seed(seed)
 
     a = generate_complex_covariance(17)
@@ -43,9 +44,9 @@ def test_iscovariance():
 
 
 def test_covariancetoreal():
-    seed=761
+    seed = 761
     rnd.seed(seed)
-    
+
     n_features = 17
     a = generate_complex_covariance(n_features)
     a_real = covariancetoreal(a)
@@ -56,9 +57,9 @@ def test_covariancetoreal():
 
 
 def test_covariancetocomplex():
-    seed=761
+    seed = 761
     rnd.seed(seed)
-    
+
     n_features = 17
     a = generate_complex_covariance(n_features)
     a_real = covariancetoreal(a)
@@ -72,9 +73,9 @@ def test_covariancetocomplex():
 
 
 def test_covariancestoreal():
-    seed=761
+    seed = 761
     rnd.seed(seed)
-    
+
     n_features = 17
     n_samples = 100
     a = np.zeros((n_samples, n_features, n_features), dtype=complex)
@@ -89,9 +90,9 @@ def test_covariancestoreal():
 
 
 def test_covariancestocomplex():
-    seed=761
+    seed = 761
     rnd.seed(seed)
-    
+
     n_features = 17
     n_samples = 100
     a = np.zeros((n_samples, n_features, n_features), dtype=complex)
@@ -107,9 +108,9 @@ def test_covariancestocomplex():
 
 
 def test_arraytoreal():
-    seed=761
+    seed = 761
     rnd.seed(seed)
-    
+
     n_features = 17
     n_samples = 200
 
@@ -121,7 +122,8 @@ def test_arraytoreal():
     assert np.isrealobj(a_real)
 
     # 2 axis case
-    a = np.random.randn(n_samples, n_features) + 1j*np.random.randn(n_samples, n_features)
+    a = np.random.randn(n_samples, n_features) + \
+        1j*np.random.randn(n_samples, n_features)
     a_real = arraytoreal(a)
 
     assert a_real.ndim == 2
@@ -130,9 +132,9 @@ def test_arraytoreal():
 
 
 def test_arraytocomplex():
-    seed=761
+    seed = 761
     rnd.seed(seed)
-    
+
     n_features = 17
     n_samples = 200
 
@@ -145,7 +147,8 @@ def test_arraytocomplex():
     assert np.iscomplexobj(a_bis)
 
     # 2 axis case
-    a = np.random.randn(n_samples, n_features) + 1j*np.random.randn(n_samples, n_features)
+    a = np.random.randn(n_samples, n_features) + \
+        1j*np.random.randn(n_samples, n_features)
     a_real = arraytoreal(a)
     a_bis = arraytocomplex(a_real)
 
