@@ -5,7 +5,6 @@ scipy
 scikit-learn
 tensorflow
 pytorch
-mkl-service
 theano
 tqdm
 seaborn
