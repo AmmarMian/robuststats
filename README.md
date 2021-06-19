@@ -1,4 +1,6 @@
-# Robust statistical toolbox
+# Robust statistics toolbox
+
+![build](https://img.shields.io/badge/build-passing-green?style=for-the-badge) ![python](https://img.shields.io/badge/python-%3E3.7-blue?style=for-the-badge) ![coverage](https://img.shields.io/badge/coverage-87%25-green?style=for-the-badge) 
 
 This repository is a WIP on a toolbox to bring robust statistical methods availaible to the scientific community in Python.
 
