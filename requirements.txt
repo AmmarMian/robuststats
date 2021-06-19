@@ -1,0 +1,17 @@
+autograd>=1.2
+numpy>=1.16
+flake8
+scipy
+scikit-learn
+tensorflow
+pytorch
+mkl-service
+theano
+tqdm
+seaborn
+plotly
+tikzplotlib
+nose2
+ipython
+jupyter
+sphinx

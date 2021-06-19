@@ -4,7 +4,7 @@ Created Date: Friday June 18th 2021 - 05:32pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Fri Jun 18 2021
+Last Modified: Sat Jun 19 2021
 Modified By: Ammar Mian
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
@@ -45,7 +45,7 @@ def arraytoreal(a):
         return a
 
 
-def arraytocomplex():
+def arraytocomplex(a):
     """Returns complex array from real input array.
 
     Parameters
@@ -63,20 +63,22 @@ def arraytocomplex():
     AttributeError
         when input array format is not of dimension 1 or 2.
     """
-    if not np.iscomplexobj(samples):
-        if samples.ndim == 1:
-            return samples[:p] + 1j*samples[p:]
-        elif samples.ndim == 2:
-            return np.vstack(samples[:,:p] + 1j*samples[:,p:])
+    if not np.iscomplexobj(a):
+        if a.ndim == 1:
+            p = int(len(a)/2)
+            return a[:p] + 1j*a[p:]
+        elif a.ndim == 2:
+            p = int(a.shape[1]/2)
+            return np.vstack(a[:,:p] + 1j*a[:,p:])
         else:
             raise AttributeError("Input array format not supported")
     else:
-        return samples
+        return a
 
 
 def covariancestoreal(a):
     """Same as :func:`~robuststats.models.mappings.complex.covariancetoreal
-    but apply it to severa matrices in input.
+    but apply it to several matrices in input.
 
     Parameters
     ----------
@@ -93,22 +95,22 @@ def covariancestoreal(a):
     AttributeError
         when input array format is not of dimension 3.
     """
-    if a.ndim == 3:
+    if not np.iscomplexobj(a):
+        logging.debug("Input array is not complex, returning input")
+        return a
+    elif a.ndim == 3:
         n_samples, n_features, _ = a.shape
         a_real = np.zeros((n_samples, 2*n_features, 2*n_features))
         for i in range(n_samples):
             a_real[i] = covariancetoreal(a[i])
         return a_real
-    elif not np.iscomplexobj(a):
-        logging.debug("Input array is not complex, returning input")
-        return a
     else:
         raise AttributeError("Input array format not supported.")
 
 
 def covariancestocomplex(a):
     """Same as :func:`~robuststats.models.mappings.complex.covariancetocomplex
-    but apply it to severa matrices in input.
+    but apply it to several matrices in input.
 
     Parameters
     ----------
@@ -125,15 +127,15 @@ def covariancestocomplex(a):
     AttributeError
         when input array format is not of dimension 2 or shape of input is not even.
     """
-    if a.ndim == 3 and a.shape[1]%2==0:
+    if np.iscomplexobj(a):
+        logging.debug("Input array is already complex, returning input.")
+        return a
+    elif a.ndim == 3 and a.shape[1]%2==0:
         n_samples, n_features, _ = a.shape
         a_complex = np.zeros((n_samples, int(n_features/2), int(n_features/2)), dtype=complex)
         for i in range(n_samples):
             a_complex[i] = covariancetocomplex(a[i])
         return a_complex
-    elif np.iscomplexobj(a):
-        logging.debug("Input array is already complex, returning input.")
-        return a
     else:
         raise AttributeError("Input array format not supported.")
 

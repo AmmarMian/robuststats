@@ -4,7 +4,7 @@ Created Date: Friday June 18th 2021 - 10:23pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Fri Jun 18 2021
+Last Modified: Sat Jun 19 2021
 Modified By: Ammar Mian
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
@@ -12,7 +12,7 @@ Copyright (c) 2021 Université Savoie Mont-Blanc
 from robuststats.models.mappings.complex import check_Hermitian, iscovariance, \
             covariancetoreal, covariancetocomplex, covariancestoreal, \
             covariancestocomplex, arraytoreal, arraytocomplex
-from pyCovariance.generation_data import generate_covariance
+from pyCovariance.generation_data import generate_complex_covariance
 from robuststats.utils.verbose import matprint
 import numpy.random as rnd
 import numpy.testing as np_test
@@ -23,16 +23,17 @@ def test_check_Hermitian():
     rnd.seed(seed)
 
     a = np.random.randn(17, 17) + 1j*np.random.randn(17, 17)
-    a = (a + a.T.conj())/2
+    a_hermitian = (a + a.T.conj())/2
 
-    assert check_Hermitian(a)
+    assert check_Hermitian(a_hermitian)
+    assert check_Hermitian(a) is False
 
 
 def test_iscovariance():
     seed=761
     rnd.seed(seed)
 
-    a = generate_covariance(17)
+    a = generate_complex_covariance(17)
     b = np.random.randn(17, 17, 8)
     c = np.random.randn(17, 5)
 
@@ -46,11 +47,12 @@ def test_covariancetoreal():
     rnd.seed(seed)
     
     n_features = 17
-    a = generate_covariance(n_features)
+    a = generate_complex_covariance(n_features)
     a_real = covariancetoreal(a)
     assert a_real.ndim == 2
     assert a_real.shape == (2*n_features, 2*n_features)
     assert np.isrealobj(a_real)
+    np_test.assert_equal(covariancetoreal(a_real), a_real)
 
 
 def test_covariancetocomplex():
@@ -58,7 +60,7 @@ def test_covariancetocomplex():
     rnd.seed(seed)
     
     n_features = 17
-    a = generate_covariance(n_features)
+    a = generate_complex_covariance(n_features)
     a_real = covariancetoreal(a)
     a_bis = covariancetocomplex(a_real)
 
@@ -66,6 +68,7 @@ def test_covariancetocomplex():
     assert a_bis.shape == (n_features, n_features)
     assert np.iscomplexobj(a_bis)
     np_test.assert_equal(a, a_bis)
+    np_test.assert_equal(covariancetocomplex(a), a)
 
 
 def test_covariancestoreal():
@@ -74,14 +77,15 @@ def test_covariancestoreal():
     
     n_features = 17
     n_samples = 100
-    a = np.zeros((n_samples, n_features, n_features))
+    a = np.zeros((n_samples, n_features, n_features), dtype=complex)
     for i in range(n_samples):
-        a[i] = generate_covariance(n_features)
+        a[i] = generate_complex_covariance(n_features)
     a_real = covariancestoreal(a)
 
     assert a_real.ndim == 3
     assert a_real.shape == (100, 2*n_features, 2*n_features)
     assert np.isrealobj(a_real)
+    np_test.assert_equal(covariancestoreal(a_real), a_real)
 
 
 def test_covariancestocomplex():
@@ -90,15 +94,16 @@ def test_covariancestocomplex():
     
     n_features = 17
     n_samples = 100
-    a = np.zeros((n_samples, n_features, n_features))
+    a = np.zeros((n_samples, n_features, n_features), dtype=complex)
     for i in range(n_samples):
-        a[i] = generate_covariance(n_features)
+        a[i] = generate_complex_covariance(n_features)
     a_real = covariancestoreal(a)
     a_bis = covariancestocomplex(a_real)
     assert a_bis.ndim == 3
     assert a_bis.shape == (100, n_features, n_features)
     assert np.iscomplexobj(a_bis)
     np_test.assert_equal(a, a_bis)
+    np_test.assert_equal(covariancestocomplex(a), a)
 
 
 def test_arraytoreal():
