@@ -19,7 +19,7 @@ from .base import empirical_covariance, ComplexEmpiricalCovariance
 from ..models.mappings.complexreal import arraytoreal, arraytocomplex
 import logging
 from ..utils.verbose import logging_tqdm
-
+from tqdm import tqdm
 
 def get_normalisation_function(normalisation=None):
     """Get normalisation function to perform for shape matrix
@@ -33,7 +33,8 @@ def get_normalisation_function(normalisation=None):
     ----------
     normalisaton : string, optional
         type of normalisation to perform.
-        Choice between 'trace', 'determinant', 'element', by default None.
+        Choice between 'trace', 'determinant', 'element'
+        and 'None', by default 'None'.
 
     Returns
     -------
@@ -55,7 +56,7 @@ def get_normalisation_function(normalisation=None):
         return determinant
     elif normalisation == 'element':
         return element
-    elif normalisation is None:
+    elif normalisation == 'None':
         return (lambda x: 1)
     else:
         logging.error(f'Normalisation type {normalisation} unknown. '
@@ -65,8 +66,8 @@ def get_normalisation_function(normalisation=None):
 
 @_deprecate_positional_args
 def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
-                                  iter_max=30, normalisation=None,
-                                  **kwargs):
+                                  iter_max=30, normalisation='None',
+                                  verbose=False, **kwargs):
     """Perform Tyler's fixed-point estimation of shape matrix.
     Data is always assumed to be centered
     Parameters
@@ -82,7 +83,10 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         number of maximum iterations, by default 30.
     normalisaton : string, optional
         type of normalisation to perform.
-        Choice between 'trace', 'determinant', 'element', by default None.
+        Choice between 'trace', 'determinant', 'element'
+        and 'None', by default 'None'.
+    verbose : bool, optional
+        show progress of algorithm at each iteration, by default False
     Returns
     -------
     array-like of shape (n_features, n_features)
@@ -105,6 +109,8 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
     delta = np.inf  # Distance between two iterations
     iteration = 0
 
+    if verbose:
+        pbar_v = tqdm(total=iter_max)
     pbar = logging_tqdm(total=iter_max)
     while (delta > tol) and (iteration < iter_max):
         # compute expression of Tyler estimator
@@ -124,6 +130,10 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         pbar.update()
         pbar.set_description(f'(err={delta})', refresh=True)
 
+        if verbose:
+            pbar_v.update()
+            pbar_v.set_description(f'(err={delta})', refresh=True)
+
     if iteration == iter_max:
         logging.warning('Estimation algorithm did not converge')
 
@@ -131,38 +141,67 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
 
 
 class TylerShapeMatrix(ComplexEmpiricalCovariance):
+    """Tyler M-estimator of shape matrix with complex values.
+    See:
+    >David E. Tyler.
+    >"A Distribution-Free M-Estimator of Multivariate Scatter."
+    >Ann. Statist. 15 (1) 234 - 251, March, 1987.
+    >https://doi.org/10.1214/aos/1176350263
 
-    def __init__(self, *, method='fixed-point', **kwargs):
+    Parameters
+    ----------
+    tol : float, optional
+        criterion for error between two iterations, by default 1e-4.
+    method : str, optional
+        way to compute the solution between 
+        'fixed-point', 'bcd' or 'gradient', by default 'fixed-point'.
+    iter_max : int, optional
+        number of maximum iterations of algorithm, by default 100.
+    normalisation : str, optional
+        type of normalisation between 'trace', 'determinant'
+        or 'None', by default 'None'.
+    verbose : bool, optional
+        show a progressbar of algorithm, by default False.
+    Attributes
+    ----------
+    covariance_ : ndarray of shape (n_features, n_features)
+        Estimated covariance matrix
+    err_ : float
+        final error between two iterations.
+    iteration_ : int
+        number of iterations done for estimation.
+    """
+
+    def __init__(self, tol=1e-4, method='fixed-point',
+                 iter_max=100, normalisation='None',
+                 verbose=False):
         super().__init__()
-        self.set_method(method, **kwargs)
-        self._err = np.inf
-        self._iteration = 0
-        self._kwargs = kwargs
-
-    def __str__(self) -> str:
-        if len(self._kwargs) > 0:
-            kwargs_str = ', '.join(
-                [f'{k}={self._kwargs[k]}' for k in self._kwargs])
-            return f'TylerShapeMatrix(method={self.method}, ' +\
-                kwargs_str + ')'
-        else:
-            return f'TylerShapeMatrix(method={self.method})'
-
-    def set_method(self, method, **kwargs):
         self.method = method
+        self.verbose = verbose
+        self.tol = tol
+        self.iter_max = iter_max
+        self.normalisation = normalisation
 
+        self.set_method()
+        self.err_ = np.inf
+        self.iteration_ = 0
+
+    def set_method(self):
         # TODO: Add geodesic gradient and BCD
-        if method == 'fixed-point':
-            def estimation_function(X, init):
-                return tyler_shape_matrix_fixedpoint(X, init=init, **kwargs)
+        if self.method == 'fixed-point':
+            def estimation_function(X, init, **kwargs):
+                return tyler_shape_matrix_fixedpoint(
+                    X, init=init, tol=self.tol, iter_max=self.iter_max,
+                    normalisation=self.normalisation,
+                    verbose=self.verbose, **kwargs)
         else:
             logging.error("Estimation method not known.")
-            raise NotImplementedError(f"Estimation method {method}"
+            raise NotImplementedError(f"Estimation method {self.method}"
                                       " is not known.")
-            estimation_function = None
+
         self._estimation_function = estimation_function
 
-    def fit(self, X, y=None, init=None):
+    def fit(self, X, y=None, init=None, **kwargs):
         """Fits the Tyler estimator of shape matrix with the
         specified method when initialised object.
         Parameters
@@ -178,15 +217,20 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
         -------
         self : object
         """
-        if self._iteration > 0:
+        if self.iteration_ > 0:
             logging.warning("Overwriting previous fit.")
         X = arraytocomplex(self._validate_data(arraytoreal(X)))
-        covariance, err, iteration = self._estimation_function(X, init)
+        covariance, err, iteration = self._estimation_function(
+            X, init, **kwargs)
         self._set_covariance(covariance)
-        self._err = err
-        self._iteration = iteration
+        self.err_ = err
+        self.iteration_ = iteration
         return self
 
-    def score(self, X_test, y=None):
+    def score(self, X_test, y=None, model='Gaussian'):
         # TODO: log-likelihood and all for elliptical distributions
-        return super().score(X_test)
+        if model == 'Gaussian':
+            return super().score(X_test)
+        else:
+            raise NotImplementedError(
+                f"Model {model} is not known.")
