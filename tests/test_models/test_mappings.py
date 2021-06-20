@@ -4,12 +4,12 @@ Created Date: Friday June 18th 2021 - 10:23pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Sat Jun 19 2021
-Modified By: Ammar Mian
+Last Modified: Sunday, 20th June 2021 4:55:38 pm
+Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
 '''
-from robuststats.models.mappings.complex import check_Hermitian, iscovariance,\
+from robuststats.models.mappings.complexreal import check_Hermitian, iscovariance,\
             covariancetoreal, covariancetocomplex, covariancestoreal, \
             covariancestocomplex, arraytoreal, arraytocomplex
 from pyCovariance.generation_data import generate_complex_covariance
