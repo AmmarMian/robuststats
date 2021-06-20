@@ -77,7 +77,7 @@ def arraytocomplex(a):
 
 
 def covariancestoreal(a):
-    """Same as :func:`~robuststats.models.mappings.complex.covariancetoreal
+    """Same as :func:`~robuststats.models.mappings.complexreal.covariancetoreal
     but apply it to several matrices in input.
 
     Parameters
@@ -109,7 +109,7 @@ def covariancestoreal(a):
 
 
 def covariancestocomplex(a):
-    """Same as :func:`~robuststats.models.mappings.complex.covariancetocomplex
+    """Same as :func:`~robuststats.models.mappings.complexreal.covariancetocomplex
     but apply it to several matrices in input.
 
     Parameters

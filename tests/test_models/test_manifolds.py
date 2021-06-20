@@ -19,6 +19,9 @@ import numpy as np
 from numpy import linalg as la
 from scipy.linalg import expm
 
+import logging
+logging.basicConfig(level='INFO')
+
 
 # TODO: tester avec k!=1
 def test_inner():

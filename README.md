@@ -11,7 +11,7 @@ TODO: README template and add info
 # Authors
 
 * Ammar Mian, Associate professor at Université Savoie Mont-Blanc
-   * Web: ammarmian.github.io
+   * Web: https://ammarmian.github.io/
    * mail: ammar.mian@protonmail.com
 * Antoine Collas, Ph.D Student at Université Paris-Saclay
    * mail: antoine.collas@centralesupelec.fr

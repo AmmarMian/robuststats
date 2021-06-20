@@ -18,6 +18,9 @@ import numpy.random as rnd
 import numpy.testing as np_test
 import numpy as np
 
+import logging
+logging.basicConfig(level='INFO')
+
 
 def test_ComplexEmpiricalCovariance():
     seed = 761
