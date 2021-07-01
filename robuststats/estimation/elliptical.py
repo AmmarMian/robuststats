@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Sunday, 20th June 2021 8:38:46 pm
+Last Modified: Thursday, 1st July 2021 9:56:10 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -16,10 +16,11 @@ import numpy.linalg as la
 from sklearn.utils.validation import _deprecate_positional_args
 from pyCovariance.matrix_operators import invsqrtm
 from .base import empirical_covariance, ComplexEmpiricalCovariance
-from ..models.mappings.complexreal import arraytoreal, arraytocomplex
+from ..models.mappings import arraytoreal, arraytocomplex
 import logging
 from ..utils.verbose import logging_tqdm
 from tqdm import tqdm
+
 
 def get_normalisation_function(normalisation=None):
     """Get normalisation function to perform for shape matrix

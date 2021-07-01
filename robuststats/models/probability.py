@@ -1,9 +1,9 @@
 '''
-File: complexcircularelliptical.py
+File: probability.py
 File Created: Monday, 21st June 2021 12:44:26 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Monday, 21st June 2021 7:50:02 pm
+Last Modified: Thursday, 1st July 2021 10:39:31 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -12,10 +12,11 @@ Copyright 2021, Université Savoie Mont-Blanc
 
 import logging
 from scipy.stats._multivariate import  multivariate_normal_gen,\
-    multivariate_normal_frozen, _PSD, _squeeze_output
+    multivariate_normal_frozen, multivariate_t_frozen,\
+    multivariate_t_gen
 import numpy as np
-from ..mappings.complexreal import covariancetoreal,\
-    covariancetocomplex, arraytoreal, arraytocomplex
+from .mappings import covariancetoreal,\
+    arraytoreal, arraytocomplex
 
 
 def _check_parameters_complex_normal(mean, cov):
@@ -106,7 +107,8 @@ class complex_multivariate_normal_frozen(multivariate_normal_frozen):
         is_complex = np.iscomplexobj(self._mean_orig) or\
                      np.iscomplexobj(self._cov_orig)
         if is_complex:
-            return arraytocomplex(super().rvs(size, random_state))
+            return arraytocomplex(super(complex_multivariate_normal_frozen,
+                                        self).rvs(size, random_state))
         else:
             return super(complex_multivariate_normal_frozen,
                          self).rvs(size, random_state)
@@ -294,3 +296,103 @@ class complex_multivariate_normal_gen(multivariate_normal_gen):
 
 
 complex_multivariate_normal = complex_multivariate_normal_gen()
+
+
+class complex_multivariate_t_frozen(multivariate_t_frozen):
+    """ Frozen model of complex_multivariate_t."""
+
+    def __init__(self, loc=None, shape=1, df=1, allow_singular=False,
+                 seed=None):
+        self._loc_orig = loc
+        self._shape_orig = shape
+        loc, shape = _check_parameters_complex_normal(loc, shape)
+        super(complex_multivariate_t_frozen,
+              self).__init__(loc, shape, df, allow_singular, seed)
+
+    def logpdf(self, x):
+        x, _, _ = _check_parameters_array_complex_normal(
+            x, self._loc_orig, self._shape_orig)
+        return np.real(super(complex_multivariate_t_frozen,
+                             self).logpdf(x))
+
+    def rvs(self, size=1, random_state=None):
+        is_complex = np.iscomplexobj(self._loc_orig) or\
+                     np.iscomplexobj(self._shape_orig)
+        if is_complex:
+            return arraytocomplex(super(
+                complex_multivariate_t_frozen, self).rvs(size,
+                                                         random_state))
+        else:
+            return super(complex_multivariate_t_frozen,
+                         self).rvs(size, random_state)
+
+
+class complex_multivariate_t_gen(multivariate_t_gen):
+    """ A complex multivariate t-distribution.
+    Extends multivariate_t to circular complex
+    distribution thanks to complex to real mappings.
+    """
+
+    def __init__(self, seed=None) -> None:
+        super(complex_multivariate_t_gen, self).__init__(seed)
+
+    def __call__(self, loc=None, shape=1, df=1, allow_singular=False,
+                 seed=None):
+        """Create a frozen multivariate t-distribution.
+        See `multivariate_t_frozen` for more information.
+        """
+        return complex_multivariate_t_frozen(
+            loc, shape, df,
+            allow_singular=allow_singular,
+            seed=seed)
+
+    def _process_quantiles(self, x, dim):
+        """
+        Adjust quantiles array so that last axis labels the components of
+        each data point.
+        """
+        if np.iscomplexobj(x):
+            x = np.asarray(x, dtype=complex)
+        else:
+            x = np.asarray(x, dtype=float)
+
+        if x.ndim == 0:
+            x = x[np.newaxis]
+        elif x.ndim == 1:
+            if dim == 1:
+                x = x[:, np.newaxis]
+            else:
+                x = x[np.newaxis, :]
+
+        return x
+
+    def rvs(self, loc=None, shape=1, df=1, size=1, random_state=None):
+        """Draw random samples from a multivariate t-distribution.
+        Parameters
+        ----------
+        %(_mvn_doc_default_callparams)s
+        size : integer, optional
+            Number of samples to draw (default 1).
+        %(_doc_random_state)s
+        Returns
+        -------
+        rvs : ndarray or scalar
+            Random variates of size (`size`, `N`), where `N` is the
+            dimension of the random variable.
+        Notes
+        -----
+        %(_mvn_doc_callparams_note)s
+        """
+        is_complex = np.iscomplexobj(loc) or np.iscomplexobj(shape)
+        loc, shape = _check_parameters_complex_normal(loc, shape)
+        if is_complex:
+            return arraytocomplex(super(complex_multivariate_t_gen,
+                                        self).rvs(loc, shape, df, size,
+                                                  random_state))
+        else:
+            return super(complex_multivariate_t_gen,
+                         self).rvs(loc, shape, df, size,
+                                   random_state)
+
+
+complex_multivariate_t = complex_multivariate_t_gen()

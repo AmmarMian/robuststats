@@ -20,10 +20,10 @@ robuststats.estimation.elliptical module
    :undoc-members:
    :show-inheritance:
 
-robuststats.estimation.kronecker module
----------------------------------------
+robuststats.estimation.structured module
+----------------------------------------
 
-.. automodule:: robuststats.estimation.kronecker
+.. automodule:: robuststats.estimation.structured
    :members:
    :undoc-members:
    :show-inheritance:

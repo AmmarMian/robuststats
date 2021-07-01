@@ -3,16 +3,15 @@ File: test_base.py
 File Created: Sunday, 20th June 2021 7:11:16 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Sunday, 20th June 2021 7:29:50 pm
+Last Modified: Thursday, 1st July 2021 10:01:49 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-from robuststats.models.mappings.complexreal import check_Hermitian
+from robuststats.models.mappings import check_Hermitian
 from robuststats.estimation.base import ComplexEmpiricalCovariance,\
     empirical_covariance
-from pyCovariance.generation_data import generate_complex_covariance
 
 import numpy.random as rnd
 import numpy.testing as np_test

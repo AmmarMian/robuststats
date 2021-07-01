@@ -1,15 +1,32 @@
 robuststats.models package
 ==========================
 
-Subpackages
------------
+Submodules
+----------
 
-.. toctree::
-   :maxdepth: 4
+robuststats.models.manifolds module
+-----------------------------------
 
-   robuststats.models.manifolds
-   robuststats.models.mappings
-   robuststats.models.probability
+.. automodule:: robuststats.models.manifolds
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robuststats.models.mappings module
+----------------------------------
+
+.. automodule:: robuststats.models.mappings
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robuststats.models.probability module
+-------------------------------------
+
+.. automodule:: robuststats.models.probability
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------

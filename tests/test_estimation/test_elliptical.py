@@ -3,14 +3,13 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Sunday, 20th June 2021 9:16:20 pm
+Last Modified: Thursday, 1st July 2021 10:02:13 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-from unicodedata import decimal
-from robuststats.models.mappings.complexreal import check_Hermitian
+from robuststats.models.mappings import check_Hermitian
 from robuststats.estimation.elliptical import get_normalisation_function,\
     tyler_shape_matrix_fixedpoint, TylerShapeMatrix
 from pyCovariance.generation_data import generate_complex_covariance,\

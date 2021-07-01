@@ -1,11 +1,11 @@
 '''
-File: structuredcovariance.py
+File: manifolds.py
 Created Date: Saturday June 19th 2021 - 06:20pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Sat Jun 19 2021
-Modified By: Ammar Mian
+Last Modified: Thursday, 1st July 2021 9:54:48 am
+Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
 '''

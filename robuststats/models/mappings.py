@@ -1,11 +1,11 @@
 '''
-File: complex.py
+File: mappings.py
 Created Date: Friday June 18th 2021 - 05:32pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Sat Jun 19 2021
-Modified By: Ammar Mian
+Last Modified: Thursday, 1st July 2021 9:52:47 am
+Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
 '''

@@ -3,23 +3,27 @@ File: test_complexcircularelliptical.py
 File Created: Monday, 21st June 2021 1:58:36 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Monday, 21st June 2021 7:51:24 pm
+Last Modified: Thursday, 1st July 2021 11:02:26 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-from numpy.lib.function_base import cov
-from robuststats.models.probability.complexcircularelliptical import complex_multivariate_normal_frozen,\
-    complex_multivariate_normal, _check_parameters_array_complex_normal, _check_parameters_complex_normal
-from robuststats.models.mappings.complexreal import check_Hermitian
+
+from robuststats.models.probability import complex_multivariate_normal_frozen,\
+    complex_multivariate_normal, _check_parameters_array_complex_normal,\
+    _check_parameters_complex_normal, complex_multivariate_t_frozen,\
+    complex_multivariate_t
+from robuststats.models.mappings import check_Hermitian
 from pyCovariance.generation_data import generate_complex_covariance,\
     generate_covariance
+
 # from robuststats.utils.verbose import matprint
 import numpy.random as rnd
 import numpy.testing as np_test
 import numpy as np
 import numpy.linalg as la
+from scipy.special import loggamma
 
 import logging
 logging.basicConfig(level='INFO')
@@ -352,3 +356,70 @@ def test_complex_multivariate_normal():
     assert np.all(model.cdf(x, mean, covariance) <= 1)
     assert np.isrealobj(x_sampled)
     assert x_sampled.shape == (n_samples, n_features)
+
+
+def test_complex_multivariate_t_frozen():
+
+    seed = 761
+    rnd.seed(seed)
+
+    n_features = 7
+    n_samples = 10
+    df = 3
+
+    # Both data and parameters complex
+    loc = np.zeros((n_features,), dtype=complex)
+    shape = generate_complex_covariance(n_features)
+    x = np.random.randn(n_samples, n_features) + 1j
+    model = complex_multivariate_t_frozen(loc=loc, shape=shape, df=df)
+    x_sampled = model.rvs(n_samples)
+    assert model.logpdf(x).shape == (n_samples,)
+    assert model.pdf(x).shape == (n_samples,)
+    assert np.all(model.pdf(x) >= 0)
+    assert np.all(model.pdf(x) <= 1)
+    assert np.iscomplexobj(x_sampled)
+    assert x_sampled.shape == (n_samples, n_features)
+
+    # TODO: Testing if logpdf is accurate when complex data and parameters
+    log_pdf = -np.ones((n_samples,), dtype=float)*n_features*np.log(np.pi) +\
+        loggamma(df + n_features) - loggamma(df) - n_features*np.log(df) -\
+        np.log(np.abs(la.det(shape)))
+    inv_covariance = la.inv(shape)
+    for k in range(n_samples):
+        y = x_sampled[k, :].reshape((n_features, 1))
+        log_pdf[k] -= (n_features+df)*np.log(
+            1 + np.trace(np.real(y @ y.T.conj() @ inv_covariance)))
+    np_test.assert_almost_equal(log_pdf, model.logpdf(x_sampled))
+
+    # Both data and parameters real
+    loc = np.zeros((n_features,))
+    shape = generate_covariance(n_features)
+    x = np.random.randn(n_samples, n_features)
+    model = complex_multivariate_t_frozen(loc=loc, shape=shape, df=df)
+    x_sampled = model.rvs(n_samples)
+    assert model.logpdf(x).shape == (n_samples,)
+    assert model.pdf(x).shape == (n_samples,)
+    assert np.all(model.pdf(x) >= 0)
+    assert np.all(model.pdf(x) <= 1)
+    assert np.isrealobj(x_sampled)
+    assert x_sampled.shape == (n_samples, n_features)
+
+    # data real and parameters complex
+    loc = np.zeros((n_features,), dtype=complex)
+    shape = generate_complex_covariance(n_features)
+    x = np.random.randn(n_samples, n_features)
+    model = complex_multivariate_t_frozen(loc=loc, shape=shape, df=df)
+    assert model.logpdf(x).shape == (n_samples,)
+    assert model.pdf(x).shape == (n_samples,)
+    assert np.all(model.pdf(x) >= 0)
+    assert np.all(model.pdf(x) <= 1)
+
+    # data complex and parameters real
+    loc = np.zeros((n_features,))
+    shape = generate_covariance(n_features)
+    x = np.random.randn(n_samples, n_features) + 1j
+    model = complex_multivariate_t_frozen(loc=loc, shape=shape, df=df)
+    assert model.logpdf(x).shape == (n_samples,)
+    assert model.pdf(x).shape == (n_samples,)
+    assert np.all(model.pdf(x) >= 0)
+    assert np.all(model.pdf(x) <= 1)

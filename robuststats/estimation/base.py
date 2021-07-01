@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Sunday, 20th June 2021 7:34:15 pm
+Last Modified: Thursday, 1st July 2021 9:57:59 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -16,7 +16,7 @@ from sklearn.utils.validation import check_array,\
 import warnings
 
 # from ..utils.validation import check_array, check_X_y
-from ..models.mappings.complexreal import covariancetoreal,\
+from ..models.mappings import covariancetoreal,\
             covariancetocomplex, arraytoreal, arraytocomplex
 
 
@@ -117,7 +117,8 @@ class ComplexEmpiricalCovariance(EmpiricalCovariance):
 
     def error_norm(self, comp_cov, norm='frobenius', scaling=True,
                    squared=True):
-            __doc__ = 'Overidden to handle complex data.\n' +\
-                 super().__doc__
-            return np.abs(super().error_norm(comp_cov, norm, scaling,
-                                             squared))
+        """Overidden error_norm of EmpiricalCovariance
+        to handle complex data."""
+
+        return np.abs(super().error_norm(comp_cov, norm, scaling,
+                                         squared))
