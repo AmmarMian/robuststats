@@ -15,7 +15,6 @@ from sklearn.utils.validation import check_array,\
     _deprecate_positional_args
 import warnings
 
-# from ..utils.validation import check_array, check_X_y
 from ..models.mappings import covariancetoreal,\
             covariancetocomplex, arraytoreal, arraytocomplex
 

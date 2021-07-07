@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 1st July 2021 9:56:10 am
+Last Modified: Wednesday, 7th July 2021 2:34:48 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -154,7 +154,7 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
     tol : float, optional
         criterion for error between two iterations, by default 1e-4.
     method : str, optional
-        way to compute the solution between 
+        way to compute the solution between
         'fixed-point', 'bcd' or 'gradient', by default 'fixed-point'.
     iter_max : int, optional
         number of maximum iterations of algorithm, by default 100.
@@ -218,7 +218,7 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
         -------
         self : object
         """
-        if self.iteration_ > 0:
+        if self.iteration_ > 0 and self.verbose:
             logging.warning("Overwriting previous fit.")
         X = arraytocomplex(self._validate_data(arraytoreal(X)))
         covariance, err, iteration = self._estimation_function(
