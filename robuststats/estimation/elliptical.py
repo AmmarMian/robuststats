@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 7th July 2021 2:34:48 pm
+Last Modified: Thursday, 8th July 2021 1:59:42 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -220,7 +220,7 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
         """
         if self.iteration_ > 0 and self.verbose:
             logging.warning("Overwriting previous fit.")
-        X = arraytocomplex(self._validate_data(arraytoreal(X)))
+        X = self._validate_data(X)
         covariance, err, iteration = self._estimation_function(
             X, init, **kwargs)
         self._set_covariance(covariance)

@@ -1,9 +1,9 @@
 '''
-File: robust_shape_estimation.py
+File: robust_shape_montecarlo.py
 File Created: Wednesday, 7th July 2021 1:07:17 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 7th July 2021 3:40:36 pm
+Last Modified: Thursday, 8th July 2021 3:18:32 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     fig.write_html("error_pesudo_Gaussian.html")
 
     # Performing Monte-carlo in Student-t
-    print("Performing ehavy-tailed simulation")
+    print("Performing heavy-tailed simulation")
     d = 2
     error = Parallel(n_jobs=-1)(
         delayed(monte_carlo_trial_student)(

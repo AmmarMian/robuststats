@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 1st July 2021 9:57:59 am
+Last Modified: Thursday, 8th July 2021 1:58:59 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -87,6 +87,12 @@ class ComplexEmpiricalCovariance(EmpiricalCovariance):
         else:
             self.precision_ = None
 
+    def _validate_data(self, X):
+        X_verified = arraytocomplex(
+         super(ComplexEmpiricalCovariance, self)._validate_data(arraytoreal(X))
+        )
+        return X_verified
+
     def fit(self, X, y=None):
         """Fits the Maximum Likelihood Estimator covariance model
         according to the given training data and parameters.
@@ -102,7 +108,7 @@ class ComplexEmpiricalCovariance(EmpiricalCovariance):
         self : object
         """
 
-        X = arraytocomplex(self._validate_data(arraytoreal(X)))
+        X = self._validate_data(X)
         if self.assume_centered:
             self.location_ = np.zeros(X.shape[1], dtype=complex)
         else:

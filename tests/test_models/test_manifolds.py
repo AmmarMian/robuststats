@@ -4,7 +4,7 @@ Created Date: Saturday June 19th 2021 - 06:42pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Thursday, 1st July 2021 10:00:19 am
+Last Modified: Thursday, 8th July 2021 1:33:40 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
@@ -33,7 +33,7 @@ def test_inner():
     d = np.random.randint(low=1, high=200)
     n = a*b
     alpha = (d+n)/(d+n+1)
-    manifold = KroneckerHermitianPositiveElliptical(n, a, b, alpha)
+    manifold = KroneckerHermitianPositiveElliptical(a, b, alpha)
     A, B = manifold.rand()
     theta = (A, B)
     xi_A, xi_B = manifold.randvec(theta)
@@ -57,7 +57,7 @@ def test_exp():
     d = np.random.randint(low=1, high=200)
     n = a*b
     alpha = (d+n)/(d+n+1)
-    manifold = KroneckerHermitianPositiveElliptical(n, a, b, alpha)
+    manifold = KroneckerHermitianPositiveElliptical(a, b, alpha)
     A, B = manifold.rand()
     theta = (A, B)
     xi_A, xi_B = manifold.randvec(theta)
@@ -80,7 +80,7 @@ def test_retr():
     n = a*b
     alpha = (d+n)/(d+n+1)
 
-    manifold = KroneckerHermitianPositiveElliptical(n, a, b, alpha)
+    manifold = KroneckerHermitianPositiveElliptical(a, b, alpha)
     A, B = manifold.rand()
     theta = (A, B)
     xi_A, xi_B = manifold.randvec(theta)

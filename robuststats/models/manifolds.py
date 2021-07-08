@@ -4,7 +4,7 @@ Created Date: Saturday June 19th 2021 - 06:20pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Thursday, 1st July 2021 9:54:48 am
+Last Modified: Thursday, 8th July 2021 1:48:23 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
@@ -28,8 +28,6 @@ class KroneckerHermitianPositiveElliptical(Product):
 
     Attributes
     ----------
-    _n : int
-        Size of covariance matrix.
     _a : int
         Size of matrix A.
     _b : int
@@ -40,11 +38,8 @@ class KroneckerHermitianPositiveElliptical(Product):
         Number of covariance matrices. Default is 1.
     """
 
-    def __init__(self, n, a, b, alpha, k=1):
-        if n != a*b:
-            raise AttributeError(
-                f'Size of matrices incompatible: {a} x {b} != {n}')
-        self._n = n
+    def __init__(self, a, b, alpha, k=1):
+        self._n = a*b
         self._a = a
         self._b = b
         self._k = k

@@ -8,7 +8,7 @@ conda config --add channels conda-forge
 conda install -y --file requirements.txt
 
 # install pymanopt fork
-cd submodules/pymanopt_fork
+cd submodules/pymanopt
 python setup.py install
 
 # install pyCovariance
