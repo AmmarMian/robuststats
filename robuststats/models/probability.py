@@ -3,7 +3,7 @@ File: probability.py
 File Created: Monday, 21st June 2021 12:44:26 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 1st July 2021 10:39:31 am
+Last Modified: Friday, 9th July 2021 10:13:52 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -37,6 +37,9 @@ def _check_parameters_complex_normal(mean, cov):
     array_like
         Covariance matrix of the distribution, complex if necessary.
     """
+    if mean is None:
+        mean = np.zeros((len(cov),), dtype=cov.dtype)
+
     if np.isrealobj(mean) and np.isrealobj(cov):
         return mean, cov
     else:

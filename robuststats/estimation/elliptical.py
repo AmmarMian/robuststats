@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 8th July 2021 1:59:42 pm
+Last Modified: Friday, 9th July 2021 1:27:49 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -68,7 +68,7 @@ def get_normalisation_function(normalisation=None):
 @_deprecate_positional_args
 def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
                                   iter_max=30, normalisation='None',
-                                  verbose=False, **kwargs):
+                                  verbosity=False, **kwargs):
     """Perform Tyler's fixed-point estimation of shape matrix.
     Data is always assumed to be centered
     Parameters
@@ -86,7 +86,7 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         type of normalisation to perform.
         Choice between 'trace', 'determinant', 'element'
         and 'None', by default 'None'.
-    verbose : bool, optional
+    verbosity : bool, optional
         show progress of algorithm at each iteration, by default False
     Returns
     -------
@@ -110,9 +110,10 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
     delta = np.inf  # Distance between two iterations
     iteration = 0
 
-    if verbose:
+    if verbosity:
         pbar_v = tqdm(total=iter_max)
-    pbar = logging_tqdm(total=iter_max)
+    else:
+        pbar = logging_tqdm(total=iter_max)
     while (delta > tol) and (iteration < iter_max):
         # compute expression of Tyler estimator
         temp = invsqrtm(sigma)@X.T
@@ -128,12 +129,12 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         # updating sigma
         sigma = sigma_new
 
-        pbar.update()
-        pbar.set_description(f'(err={delta})', refresh=True)
-
-        if verbose:
+        if verbosity:
             pbar_v.update()
             pbar_v.set_description(f'(err={delta})', refresh=True)
+        else:
+            pbar.update()
+            pbar.set_description(f'(err={delta})', refresh=True)
 
     if iteration == iter_max:
         logging.warning('Estimation algorithm did not converge')
@@ -161,7 +162,7 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
     normalisation : str, optional
         type of normalisation between 'trace', 'determinant'
         or 'None', by default 'None'.
-    verbose : bool, optional
+    verbosity : bool, optional
         show a progressbar of algorithm, by default False.
     Attributes
     ----------
@@ -175,10 +176,10 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
 
     def __init__(self, tol=1e-4, method='fixed-point',
                  iter_max=100, normalisation='None',
-                 verbose=False):
+                 verbosity=False):
         super().__init__()
         self.method = method
-        self.verbose = verbose
+        self.verbosity = verbosity
         self.tol = tol
         self.iter_max = iter_max
         self.normalisation = normalisation
@@ -194,7 +195,7 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
                 return tyler_shape_matrix_fixedpoint(
                     X, init=init, tol=self.tol, iter_max=self.iter_max,
                     normalisation=self.normalisation,
-                    verbose=self.verbose, **kwargs)
+                    verbosity=self.verbosity, **kwargs)
         else:
             logging.error("Estimation method not known.")
             raise NotImplementedError(f"Estimation method {self.method}"
@@ -218,7 +219,7 @@ class TylerShapeMatrix(ComplexEmpiricalCovariance):
         -------
         self : object
         """
-        if self.iteration_ > 0 and self.verbose:
+        if self.iteration_ > 0 and self.verbosity:
             logging.warning("Overwriting previous fit.")
         X = self._validate_data(X)
         covariance, err, iteration = self._estimation_function(

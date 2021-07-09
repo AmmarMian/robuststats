@@ -3,7 +3,7 @@ File: robust_shape_montecarlo.py
 File Created: Wednesday, 7th July 2021 1:07:17 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 8th July 2021 3:18:32 pm
+Last Modified: Friday, 9th July 2021 10:18:30 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -28,7 +28,7 @@ def monte_carlo_trial_gaussian(trial, mean, covariance,
 
     # Estimators
     scm = ComplexEmpiricalCovariance()
-    tyler = TylerShapeMatrix(normalisation='determinant', verbose=False)
+    tyler = TylerShapeMatrix(normalisation='determinant', verbosity=False)
     estimator_list = [scm, tyler]
 
     with temp_seed(base_seed + trial):
@@ -49,7 +49,7 @@ def monte_carlo_trial_student(trial, mean, covariance, d,
                               n_samples_list, base_seed=77):
     # Estimators
     scm = ComplexEmpiricalCovariance()
-    tyler = TylerShapeMatrix(normalisation='determinant', verbose=False)
+    tyler = TylerShapeMatrix(normalisation='determinant', verbosity=False)
     estimator_list = [scm, tyler]
 
     with temp_seed(base_seed + trial):

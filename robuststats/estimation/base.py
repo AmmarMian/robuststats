@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 8th July 2021 1:58:59 pm
+Last Modified: Friday, 9th July 2021 4:26:56 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -11,12 +11,57 @@ Copyright 2021, Université Savoie Mont-Blanc
 import numpy as np
 from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_array,\
     _deprecate_positional_args
 import warnings
 
 from ..models.mappings import covariancetoreal,\
             covariancetocomplex, arraytoreal, arraytocomplex
+
+
+class CovariancesEstimation(BaseEstimator, TransformerMixin):
+    """ Estimate several covariances. Inspired by Covariances class
+    of pyriemann at:
+    >https://github.com/pyRiemann/pyRiemann/blob/master/pyriemann/estimation.py
+    The difference is that estimator is not a string but an instance
+    of a scikit-learn compatible estimator of covariance.
+    """
+    def __init__(self, estimator, **kwargs):
+        self.estimator = estimator
+
+    def fit(self, X, y=None):
+        """Fit.
+        Do nothing. For compatibility purpose.
+        Parameters
+        ----------
+        X : ndarray, shape (n_trials, n_channels, n_samples)
+            ndarray of trials.
+        y : ndarray shape (n_trials,)
+            labels corresponding to each trial, not used.
+        Returns
+        -------
+        self : Covariances instance
+            The Covariances instance.
+        """
+        return self
+
+    def transform(self, X):
+        """Estimate covariance matrices.
+        Parameters
+        ----------
+        X : ndarray, shape (n_trials, n_channels, n_samples)
+            ndarray of trials.
+        Returns
+        -------
+        covmats : ndarray, shape (n_trials, n_channels, n_channels)
+            ndarray of covariance matrices for each trials.
+        """
+        Nt, Ne, Ns = X.shape
+        covmats = np.zeros((Nt, Ne, Ne), dtype=X.dtype)
+        for i in range(Nt):
+            covmats[i, :, :] = self.estimator.fit(X[i, :, :])
+        return covmats
 
 
 @_deprecate_positional_args

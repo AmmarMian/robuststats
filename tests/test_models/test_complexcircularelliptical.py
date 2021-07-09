@@ -3,7 +3,7 @@ File: test_complexcircularelliptical.py
 File Created: Monday, 21st June 2021 1:58:36 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 1st July 2021 11:02:26 am
+Last Modified: Friday, 9th July 2021 10:38:42 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -34,6 +34,26 @@ def test__check_parameters_complex_normal():
     rnd.seed(seed)
 
     n_features = 17
+
+    # Case mean is None and cov real
+    mean = None
+    covariance = generate_covariance(n_features)
+    mean, covariance = _check_parameters_complex_normal(mean, covariance)
+    assert np.isrealobj(mean)
+    assert np.isrealobj(covariance)
+    assert mean.shape == (n_features,)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Hermitian(covariance)
+
+    # Case mean is None and cov complex
+    mean = None
+    covariance = generate_complex_covariance(n_features)
+    mean, covariance = _check_parameters_complex_normal(mean, covariance)
+    assert np.isrealobj(mean)
+    assert np.isrealobj(covariance)
+    assert mean.shape == (2*n_features,)
+    assert covariance.shape == (2*n_features, 2*n_features)
+    assert check_Hermitian(covariance)
 
     # Case both real
     mean = np.zeros((n_features,))

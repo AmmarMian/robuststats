@@ -1,5 +1,5 @@
 # create conda environment
-conda create -n robust_stats --yes 
+conda create -n robust_stats python=3.7 --yes 
 eval "$(conda shell.bash hook)"  # bug fix: https://github.com/conda/conda/issues/7980#issuecomment-492784093 
 conda activate robust_stats
 
