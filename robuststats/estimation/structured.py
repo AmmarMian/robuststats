@@ -3,8 +3,8 @@ File: structured.py
 File Created: Sunday, 20th June 2021 4:47:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 9th July 2021 5:24:54 pm
-Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+Last Modified: Tue Jul 13 2021
+Modified By: Ammar Mian
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -208,7 +208,7 @@ class KroneckerEllipticalMM(ComplexEmpiricalCovariance):
         return res
 
 
-def _generate_cost_function(X, df, loc=None):
+def _generate_cost_function_kronecker_student(X, df, loc=None):
     """Generate cost function for gradient descent from model parameters and data.
 
     Parameters
@@ -237,7 +237,7 @@ def _generate_cost_function(X, df, loc=None):
     return cost
 
 
-def _generate_egrad_function(X, a, b, df, loc=None):
+def _generate_egrad_function_kronecker_student(X, a, b, df, loc=None):
     """Generate gradient direction function for gradient descent
     from model parameters and data.
 
@@ -272,23 +272,25 @@ def _generate_egrad_function(X, a, b, df, loc=None):
         # Pre-calculations
         i_A = la.inv(A)
         i_B = la.inv(B)
-
-        grad_A = n_samples*b*i_A
-        grad_B = n_samples*a*i_B
+        grad_A = np.zeros_like(A)
+        grad_B = np.zeros_like(B)
         for i in range(n_samples):
-            M_i = Y[i, :].reshape((b, a), order='F')
-            Q_i = np.real(np.trace(i_A@M_i.conj().T@i_B@M_i))
+            M_i = X[i, :].reshape((b, a), order='F')
+            Q_i = np.real(np.trace(i_A@M_i.T@i_B@M_i))
 
-            grad_A -= (df+a*b)/(df+Q_i) * i_A@M_i.conj().T@i_B@M_i@i_A
-            grad_B -= (df+a*b)/(df+Q_i) * i_B@M_i@i_A@M_i.conj().T@i_B
+            grad_A -= (df+a*b)/(df+Q_i) * i_A@(M_i.T.conj()@i_B@M_i)@i_A
+            grad_B -= (df+a*b)/(df+Q_i) * i_B@(M_i@i_A@M_i.T.conj())@i_B
+        grad_A = grad_A/n_samples + b*i_A
+        grad_B = grad_B/n_samples + a*i_B
 
-        return (grad_A, grad_B)
+        return (grad_A.T.conj(), grad_B.T.conj())
 
     return egrad
 
 
 def _estimate_covariance_kronecker_t_gradient(X, df, a, b, manifold,
-                                              mean=None, verbosity=0):
+                                              mean=None, verbosity=0,
+                                              init=None):
     """Perform estimation of the covariance of a circular Multivariate t model
     with a structured model of the form: covariance = A \kron B.
     The estimation is done through a conjugate gradient descent method thanks
@@ -311,6 +313,8 @@ def _estimate_covariance_kronecker_t_gradient(X, df, a, b, manifold,
         space.
     verbosity : int
         level of verbosity of pymanopt Problem
+    init: tuple of array-like
+        Initial point. Optional, by default identity matrix.
 
     Returns
     -------
@@ -320,13 +324,16 @@ def _estimate_covariance_kronecker_t_gradient(X, df, a, b, manifold,
         estimate of B so that covariance = A \kron B
     """
 
-    cost = _generate_cost_function(X, df, mean)
-    egrad = _generate_egrad_function(X, a, b, df, mean)
+    cost = _generate_cost_function_kronecker_student(X, df, mean)
+    egrad = _generate_egrad_function_kronecker_student(X, a, b, df, mean)
     problem = Problem(
         manifold=manifold, cost=cost, egrad=egrad, verbosity=verbosity
     )
     solver = ConjugateGradient()
-    theta_0 = (np.eye(a, dtype=complex), np.eye(b, dtype=complex))
+    if init is None:
+        theta_0 = (np.eye(a, dtype=complex), np.eye(b, dtype=complex))
+    else:
+        theta_0 = init
     A, B = solver.solve(problem, x=theta_0)
 
     return A, B
@@ -335,7 +342,7 @@ def _estimate_covariance_kronecker_t_gradient(X, df, a, b, manifold,
 class KroneckerStudent(ComplexEmpiricalCovariance):
     @_deprecate_positional_args
     def __init__(self, a, b, df, *, store_precision=True,
-                 assume_centered=False, verbosity=0):
+                 assume_centered=True, verbosity=0):
         super().__init__(store_precision=store_precision,
                          assume_centered=assume_centered)
         self.a = a
@@ -345,7 +352,7 @@ class KroneckerStudent(ComplexEmpiricalCovariance):
         self.verbosity = verbosity
         self.manifold = KroneckerHermitianPositiveElliptical(a, b, self.alpha)
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, init=None):
         """Fits the Maximum Likelihood Estimator covariance model
         according to the given training data and parameters.
         Parameters
@@ -355,6 +362,8 @@ class KroneckerStudent(ComplexEmpiricalCovariance):
           n_features is the number of features.
         y : Ignored
             Not used, present for API consistency by convention.
+        init: tuple of array-like
+            Initial point. Optional, by default identity matrix.
         Returns
         -------
         self : object
@@ -368,7 +377,7 @@ class KroneckerStudent(ComplexEmpiricalCovariance):
         # Using pymanopt solver to obtain estimate
         A, B = _estimate_covariance_kronecker_t_gradient(
             X, self.df, self.a, self.b, self.manifold, self.location_,
-            self.verbosity
+            self.verbosity, init
         )
         self.A_ = A
         self.B_ = B
@@ -400,7 +409,7 @@ class KroneckerStudent(ComplexEmpiricalCovariance):
             self.verbosity
         )
         # compute log likelihood
-        cost_function = _generate_cost_function(
+        cost_function = _generate_cost_function_kronecker_student(
             X_test, self.df, loc=self.location_
         )
         res = cost_function(A, B)
