@@ -3,8 +3,8 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 8th July 2021 3:09:01 pm
-Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+Last Modified: Mon Jul 12 2021
+Modified By: Ammar Mian
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -59,7 +59,7 @@ def test_tyler_shape_matrix_fixedpoint():
     assert check_Hermitian(covariance)
 
     covariance, _, _ = tyler_shape_matrix_fixedpoint(a, normalisation='trace')
-    np_test.assert_equal(np.real(np.trace(covariance)), n_features)
+    np_test.assert_almost_equal(np.real(np.trace(covariance)), n_features)
 
     covariance, _, _ = tyler_shape_matrix_fixedpoint(
                                 a, normalisation='determinant')
@@ -90,7 +90,7 @@ def test_TylerShapeMatrix():
     estimator = TylerShapeMatrix(tol=1e-4, iter_max=100, normalisation='trace')
     estimator.fit(a)
     covariance = estimator.covariance_
-    np_test.assert_equal(np.real(np.trace(covariance)), n_features)
+    np_test.assert_almost_equal(np.real(np.trace(covariance)), n_features)
 
     estimator = TylerShapeMatrix(tol=1e-4, iter_max=100,
                                  normalisation='determinant')

@@ -3,8 +3,8 @@ File: test_structured.py
 File Created: Thursday, 8th July 2021 1:23:20 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 9th July 2021 5:29:22 pm
-Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+Last Modified: Tue Jul 13 2021
+Modified By: Ammar Mian
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -32,7 +32,7 @@ def test_estimation_cov_kronecker_MM():
     rnd.seed(seed)
 
     a = 7
-    b = 27
+    b = 9
     n_features = a*b
     df = 3
     alpha = (df+n_features)/(df+n_features+1)
@@ -44,7 +44,7 @@ def test_estimation_cov_kronecker_MM():
     model = complex_multivariate_t(shape=covariance, df=df)
     X = model.rvs(size=n_samples)
 
-    A, B, tol, iteration = estimation_cov_kronecker_MM(X, a, b, iter_max=100)
+    A, B, _, iteration = estimation_cov_kronecker_MM(X, a, b, iter_max=100)
 
     assert np.iscomplexobj(A)
     assert np.iscomplexobj(B)
@@ -58,7 +58,7 @@ def test_KroneckerEllipticalMM():
     rnd.seed(seed)
 
     a = 7
-    b = 27
+    b = 9
     n_features = a*b
     df = 3
     alpha = (df+n_features)/(df+n_features+1)
@@ -84,7 +84,7 @@ def test__generate_cost_function():
     rnd.seed(seed)
 
     a = 7
-    b = 27
+    b = 9
     n_features = a*b
     df = 3
     alpha = (df+n_features)/(df+n_features+1)
@@ -97,7 +97,7 @@ def test__generate_cost_function():
     X = model.rvs(size=n_samples)
 
     cost_function = _generate_cost_function(X, df)
-    assert type(cost_function(A, B)) == float
+    assert np.isscalar(cost_function(A, B))
 
 
 def test__generate_egrad_function():
@@ -105,7 +105,7 @@ def test__generate_egrad_function():
     rnd.seed(seed)
 
     a = 7
-    b = 27
+    b = 9
     n_features = a*b
     df = 3
     alpha = (df+n_features)/(df+n_features+1)
@@ -118,7 +118,11 @@ def test__generate_egrad_function():
     X = model.rvs(size=n_samples)
 
     egrad_function = _generate_egrad_function(X, a, b, df)
-    assert type(egrad_function(A, B)) == float
+    grad_A, grad_B = egrad_function(A, B)
+    assert np.iscomplexobj(grad_A)
+    assert np.iscomplexobj(grad_B)
+    assert grad_A.shape == (a, a)
+    assert grad_B.shape == (b, b)
 
 
 def test__estimate_covariance_kronecker_t_gradient():
@@ -126,7 +130,7 @@ def test__estimate_covariance_kronecker_t_gradient():
     rnd.seed(seed)
 
     a = 7
-    b = 27
+    b = 9
     n_features = a*b
     df = 3
     alpha = (df+n_features)/(df+n_features+1)
@@ -150,7 +154,7 @@ def test_KroneckerStudent():
     rnd.seed(seed)
 
     a = 7
-    b = 27
+    b = 9
     n_features = a*b
     df = 3
     alpha = (df+n_features)/(df+n_features+1)

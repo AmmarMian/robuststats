@@ -7,6 +7,9 @@ conda activate robust_stats
 conda config --add channels conda-forge
 conda install -y --file requirements.txt
 
+# cloning submodules
+git submodule update --init --recursive
+
 # install pymanopt fork
 cd submodules/pymanopt
 python setup.py install

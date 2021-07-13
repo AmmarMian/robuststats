@@ -3,8 +3,8 @@ File: test_complexcircularelliptical.py
 File Created: Monday, 21st June 2021 1:58:36 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 9th July 2021 10:38:42 am
-Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+Last Modified: Tue Jul 13 2021
+Modified By: Ammar Mian
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -102,6 +102,42 @@ def test__check_parameters_array_complex_normal():
 
     n_features = 17
     n_samples = 1000
+
+    # Case mean is None and cov complex, x complex
+    mean = None
+    covariance = generate_complex_covariance(n_features)
+    x = np.random.randn(n_samples, n_features) +1j
+    x_map, mean_map, cov_map = _check_parameters_array_complex_normal(
+                                                x, mean, covariance)
+    assert np.isrealobj(x_map)
+    assert x_map.shape == (n_samples, 2*n_features)
+    assert mean_map.shape == (2*n_features,)
+    assert cov_map.shape == (2*n_features, 2*n_features)
+
+
+    # Case mean is None and cov complex, x real
+    mean = None
+    covariance = generate_complex_covariance(n_features)
+    x = np.random.randn(n_samples, n_features)
+    x_map, mean_map, cov_map = _check_parameters_array_complex_normal(
+                                                x, mean, covariance)
+    assert np.isrealobj(x_map)
+    assert x_map.shape == (n_samples, 2*n_features)
+    assert mean_map.shape == (2*n_features,)
+    assert cov_map.shape == (2*n_features, 2*n_features)
+
+
+    # Case mean is None and cov real
+    mean = None
+    covariance = generate_covariance(n_features)
+    x = np.random.randn(n_samples, n_features)
+    x_map, mean_map, cov_map = _check_parameters_array_complex_normal(
+                                                x, mean, covariance)
+    assert np.isrealobj(x_map)
+    np_test.assert_array_equal(x_map, x)
+    np_test.assert_array_equal(mean_map, mean)
+    np_test.assert_array_equal(cov_map, covariance)
+
 
     # Case all real
     mean = np.zeros((n_features,))

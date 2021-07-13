@@ -3,8 +3,8 @@ File: probability.py
 File Created: Monday, 21st June 2021 12:44:26 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 9th July 2021 10:13:52 am
-Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+Last Modified: Tue Jul 13 2021
+Modified By: Ammar Mian
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -71,9 +71,13 @@ def _check_parameters_array_complex_normal(X, mean, cov):
         Covariance matrix of the distribution, complex if necessary.
     """
     mean_map, cov_map = _check_parameters_complex_normal(mean, cov)
-    if np.iscomplexobj(mean):
+    if np.iscomplexobj(cov):
+        if np.isrealobj(X):
+            logging.warning(
+                "Input data is real while parameters are complex. "
+                "Considering data as complex with null imaginary part.")
         return arraytoreal(X.astype(complex)), mean_map, cov_map
-    elif np.iscomplexobj(X) and not np.iscomplexobj(mean):
+    elif np.iscomplexobj(X) and np.isrealobj(cov):
         logging.warning(
             "Input data is complex while parameters of model are not."
             " Discarding imaginary part of data")
