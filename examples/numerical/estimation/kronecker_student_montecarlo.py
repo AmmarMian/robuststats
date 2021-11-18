@@ -3,7 +3,7 @@ File: kronecker_student_montecarlo.py
 File Created: Thursday, 8th July 2021 3:31:21 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 9th July 2021 4:52:12 pm
+Last Modified: Thursday, 18th November 2021 4:28:36 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -21,7 +21,7 @@ from robuststats.estimation.structured import KroneckerStudent,\
 from robuststats.models.probability import complex_multivariate_t
 from robuststats.utils.montecarlo import temp_seed
 # from robuststats.utils.verbose import matprint
-from pyCovariance.generation_data import generate_complex_covariance
+from robuststats.utils.generation_data import generate_complex_covariance
 
 
 def monte_carlo_trial(trial, a, b, mean, covariance, d,

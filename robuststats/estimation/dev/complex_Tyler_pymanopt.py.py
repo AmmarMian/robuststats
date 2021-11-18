@@ -3,7 +3,7 @@ File: Tyler_pymanopt.py
 File Created: Friday, 9th July 2021 11:04:56 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tuesday, 2nd November 2021 10:37:59 am
+Last Modified: Thursday, 18th November 2021 4:27:42 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -19,7 +19,7 @@ from pymanopt import Problem
 from pymanopt.solvers import SteepestDescent, ConjugateGradient
 from robuststats.estimation.elliptical import get_normalisation_function
 from pymanopt.manifolds.hpd import SpecialHermitianPositiveDefinite, HermitianPositiveDefinite
-from pyCovariance.matrix_operators import invsqrtm
+from robuststats.utils.linalg import invsqrtm
 
 from robuststats.models.probability import complex_multivariate_normal
 from robuststats.utils.linalg import ToeplitzMatrix

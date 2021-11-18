@@ -7,5 +7,5 @@ setup(name='robuststats',
       author='Ammar Mian',
       author_email='ammar.mian@protonmail.com',
       packages=find_packages(),
-      install_requires=['numpy', 'scipy', 'scikit-learn',  'joblib', 'pandas', 'pymanopt', 'pyCovariance'],
+      install_requires=['numpy', 'scipy', 'scikit-learn',  'joblib', 'autograd', 'pymanopt', 'geomstats', 'tqdm'],
       zip_safe=False)

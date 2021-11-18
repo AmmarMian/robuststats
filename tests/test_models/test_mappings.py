@@ -1,10 +1,10 @@
 '''
-File: test_complex.py
+File: test_mappings.py
 Created Date: Friday June 18th 2021 - 10:23pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Thursday, 1st July 2021 10:00:42 am
+Last Modified: Thursday, 18th November 2021 4:19:49 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
@@ -12,7 +12,7 @@ Copyright (c) 2021 Université Savoie Mont-Blanc
 from robuststats.models.mappings import check_Hermitian, iscovariance,\
             covariancetoreal, covariancetocomplex, covariancestoreal, \
             covariancestocomplex, arraytoreal, arraytocomplex
-from pyCovariance.generation_data import generate_complex_covariance
+from robuststats.utils.generation_data import generate_complex_covariance
 # from robuststats.utils.verbose import matprint
 import numpy.random as rnd
 import numpy.testing as np_test

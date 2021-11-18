@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 28th October 2021 10:29:52 am
+Last Modified: Thursday, 18th November 2021 4:05:36 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -18,6 +18,7 @@ import warnings
 
 from ..models.mappings import covariancetoreal,\
             covariancetocomplex, arraytoreal, arraytocomplex
+
 
 
 class CovariancesEstimation(BaseEstimator, TransformerMixin):

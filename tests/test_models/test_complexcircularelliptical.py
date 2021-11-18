@@ -3,8 +3,8 @@ File: test_complexcircularelliptical.py
 File Created: Monday, 21st June 2021 1:58:36 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tue Jul 13 2021
-Modified By: Ammar Mian
+Last Modified: Thursday, 18th November 2021 4:17:39 pm
+Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -15,7 +15,7 @@ from robuststats.models.probability import complex_multivariate_normal_frozen,\
     _check_parameters_complex_normal, complex_multivariate_t_frozen,\
     complex_multivariate_t
 from robuststats.models.mappings import check_Hermitian
-from pyCovariance.generation_data import generate_complex_covariance,\
+from robuststats.utils.generation_data import generate_complex_covariance,\
     generate_covariance
 
 # from robuststats.utils.verbose import matprint

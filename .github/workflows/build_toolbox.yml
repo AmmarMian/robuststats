@@ -4,8 +4,11 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
     - name: Checkout repository and submodules
@@ -18,14 +21,9 @@ jobs:
         python-version: 3.9
     - name: Install dependencies
       run: |
-        $CONDA/bin/conda config --add channels conda-forge
-        $CONDA/bin/conda install -y --file requirements.txt
-    - name: Install pymanopt and pyCovariance
-      run: |
-        cd submodules/pymanopt_fork
-        python setup.py install
-        cd ../pyCovariance
-        python setup.py install
+        $CONDA/bin/conda install pip
+        pip install -r requirements.txt
+
     - name: Install robuststats
       run: python setup.py install
     - name: Lint with flake8

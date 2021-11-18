@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 28th October 2021 5:04:49 pm
+Last Modified: Thursday, 18th November 2021 4:10:44 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -11,15 +11,15 @@ Copyright 2021, Université Savoie Mont-Blanc
 
 import numpy as np
 import numpy.linalg as la
-
+import logging
 
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.covariance import EmpiricalCovariance, empirical_covariance
-from pyCovariance.matrix_operators import invsqrtm
 from .base import complex_empirical_covariance, ComplexEmpiricalCovariance
 from ..models.mappings import arraytoreal, arraytocomplex
-import logging
+
 from ..utils.verbose import logging_tqdm
+from ..utils.linalg import invsqrtm
 from tqdm import tqdm
 
 

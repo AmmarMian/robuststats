@@ -1,7 +1,0 @@
-[submodule "submodules/pymanopt"]
-	path = submodules/pymanopt
-	url = https://github.com/antoinecollas/pymanopt
-
-[submodule "submodules/pyCovariance"]
-	path = submodules/pyCovariance
-	url = https://github.com/antoinecollas/pyCovariance

@@ -3,7 +3,7 @@ File: robust_shape_montecarlo.py
 File Created: Wednesday, 7th July 2021 1:07:17 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 28th October 2021 10:36:39 am
+Last Modified: Thursday, 18th November 2021 5:16:22 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -20,7 +20,7 @@ from robuststats.models.probability import complex_multivariate_normal,\
                                            complex_multivariate_t
 from robuststats.utils.montecarlo import temp_seed
 # from robuststats.utils.verbose import matprint
-from pyCovariance.generation_data import generate_complex_covariance
+from robuststats.utils.generation_data import generate_complex_covariance
 
 
 def monte_carlo_trial_gaussian(trial, mean, covariance,
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     np.random.seed(base_seed)
 
     # Monte_carlo parameters
-    n_trials = 1000
+    n_trials = 100
     number_of_points = 30
 
     # Data parameters
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     error = Parallel(n_jobs=-1)(
         delayed(monte_carlo_trial_gaussian)(
             trial, mean, covariance, n_samples_list)
-        for trial in trange(n_trials))
+        for trial in range(n_trials))
     error = np.mean(np.dstack(error), axis=2)
     df = pd.DataFrame(
         data=np.hstack([n_samples_list.reshape(number_of_points, 1), error]),
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     error = Parallel(n_jobs=-1)(
         delayed(monte_carlo_trial_student)(
             trial, mean, covariance, d, n_samples_list)
-        for trial in trange(n_trials))
+        for trial in range(n_trials))
     error = np.mean(np.dstack(error), axis=2)
     df = pd.DataFrame(
         data=np.hstack([n_samples_list.reshape(number_of_points, 1), error]),
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     error = Parallel(n_jobs=-1)(
         delayed(monte_carlo_trial_student)(
             trial, mean, covariance, d, n_samples_list)
-        for trial in trange(n_trials))
+        for trial in range(n_trials))
     error = np.mean(np.dstack(error), axis=2)
     df = pd.DataFrame(
         data=np.hstack([n_samples_list.reshape(number_of_points, 1), error]),

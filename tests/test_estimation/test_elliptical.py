@@ -3,7 +3,7 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 28th October 2021 1:58:47 pm
+Last Modified: Thursday, 18th November 2021 4:16:52 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -13,7 +13,7 @@ from robuststats.models.mappings import check_Hermitian, check_Symmetric
 from robuststats.estimation.elliptical import get_normalisation_function,\
     tyler_shape_matrix_fixedpoint, TylerShapeMatrix,\
     complex_tyler_shape_matrix_fixedpoint, ComplexTylerShapeMatrix
-from pyCovariance.generation_data import generate_covariance,\
+from robuststats.utils.generation_data import generate_covariance,\
     generate_complex_covariance,\
     sample_complex_normal_distribution
 
