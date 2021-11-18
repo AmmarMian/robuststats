@@ -1,26 +1,23 @@
 '''
-File: Tyler_pymanopt.py
-File Created: Friday, 9th July 2021 11:04:56 am
+File: autograd_tyler.py
+File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tuesday, 2nd November 2021 11:06:33 am
+Last Modified: Tuesday, 2nd November 2021 11:09:35 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-# import autograd.numpy as np
-# import autograd.numpy.linalg as la
-import numpy as np
-import numpy.linalg as la
-
-from pymanopt.function import Autograd, Callable
+import autograd.numpy as np
+import autograd.numpy.linalg as la
+import autograd
+from pymanopt.function import Callable
 from pymanopt import Problem
 from pymanopt.solvers import SteepestDescent, ConjugateGradient
-from robuststats.estimation.elliptical import get_normalisation_function, TylerShapeMatrix
 from pymanopt.manifolds.psd import SymmetricPositiveDefinite
+from robuststats.estimation.elliptical import get_normalisation_function, TylerShapeMatrix
 from pyCovariance.matrix_operators import invsqrtm
-
 from scipy.stats import multivariate_normal
 from robuststats.utils.linalg import ToeplitzMatrix
 
@@ -55,13 +52,15 @@ def _generate_cost_function(X):
     return cost
 
 
-def _generate_egrad(X):
+def _generate_egrad(X, cost):
     """Generate euclidean gradient corresponding to Tyler cost function.
 
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
         Dataset.
+    cost :
+        cost_function depending on the data X.
 
     Returns
     -------
@@ -73,54 +72,36 @@ def _generate_egrad(X):
 
     @Callable
     def egrad(Q):
-        i_Q = la.inv(Q)
-        i2_Q = la.matrix_power(i_Q, 2)
-
-        result = 0
-        for i in range(n):
-            # result -= p * (X[i, :].T@X[i, :])/np.trace(X[i, :].T@X[i, :]@i_Q) @ i2_Q
-            x_i = X[i, :].T.reshape((p, 1))
-            result -= p * (x_i@x_i.T)/np.trace((x_i@x_i.T)@i_Q)
-        return result @ i2_Q + n*i_Q
-
-        # temp = invsqrtm(Q)@X.T
-        # tau = np.einsum('ij,ji->i', temp.T, temp)
-        # tau = (1/p) * tau
-        # temp = X.T / np.sqrt(tau)
-
-        # return -(temp@temp.T)@i2_Q + n*i_Q
+        res = autograd.grad(cost, argnum=[0])(Q)
+        return res[0]
 
     return egrad
 
 
-if __name__ == '__main__':
-
-    # TODO: Debug
-    # Data generation
-    n_features = 100
+if __name__ == "__main__":
+    n_features = 500
     n_samples = 10000
     S = get_normalisation_function("determinant")
-    covariance = ToeplitzMatrix(0.95, n_features, dtype=float)
+    covariance = ToeplitzMatrix(0.70, n_features, dtype=float)
     covariance = covariance / S(covariance)
 
     print("Generating data")
     X = multivariate_normal.rvs(cov=covariance, size=n_samples)
-
-    # Estimating using Tyler's shape matrix estimator
-    print("Estimating using Tyler's shape matrix estimator")
-    estimator = TylerShapeMatrix(normalisation="determinant", verbosity=True)
-    estimator.fit(X)
-    Q_fp = estimator.covariance_
-
     # Normalisation to go to CAE model
     norm_X = la.norm(X, axis=1)
     X = X / np.tile(norm_X.reshape(n_samples, 1), [1, n_features])
+
+    # Estimating using Tyler's shape matrix estimator
+    # print("Estimating using Tyler's shape matrix estimator")
+    # estimator = TylerShapeMatrix(normalisation="determinant", verbosity=True)
+    # estimator.fit(X)
+    # Q_fp = estimator.covariance_
 
     # Pymanopt setting
     print("Setting up pymanopt")
     manifold = SymmetricPositiveDefinite(n_features)
     cost = _generate_cost_function(X)
-    egrad = _generate_egrad(X)
+    egrad = _generate_egrad(X, cost)
     problem = Problem(manifold=manifold, cost=cost, egrad=egrad)
     solver = SteepestDescent()
 
@@ -143,16 +124,3 @@ if __name__ == '__main__':
     fig.colorbar(im, ax=axes[2])
     # plt.show()
     plt.savefig("Tyler_gradient_estimation.png")
-
-    # # Handmade gradient descent euclidean
-    # print("Doing euclidean gradient descent")
-    # alpha = 0.05
-    # estimate = np.eye(n_features)
-    # converged = False
-    # delta = 1e-4
-    # while not converged:
-    #     new_estimate = estimate - alpha*egrad(estimate)
-    #     err = np.linalg.norm(estimate - new_estimate)/np.linalg.norm(estimate)
-    #     estimate = new_estimate
-    #     converged = err < delta
-    #     print(err)

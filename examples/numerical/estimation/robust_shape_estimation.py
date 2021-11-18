@@ -3,14 +3,14 @@ File: robust_shape_estimation.py
 File Created: Friday, 9th July 2021 10:07:35 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 9th July 2021 11:03:29 am
+Last Modified: Thursday, 28th October 2021 10:36:02 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
 import numpy as np
-from robuststats.estimation.elliptical import TylerShapeMatrix, get_normalisation_function
+from robuststats.estimation.elliptical import ComplexTylerShapeMatrix, get_normalisation_function
 from robuststats.models.probability import complex_multivariate_t
 from robuststats.utils.linalg import ToeplitzMatrix
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     X = model.rvs(size=n_samples)
 
     print("Performing Tyler fixed-point estimation of covariance matrix")
-    estimator = TylerShapeMatrix(normalisation=normalisation, verbosity=True)
+    estimator = ComplexTylerShapeMatrix(normalisation=normalisation, verbosity=True)
     estimator.fit(X)
 
     print("Saving plots to Tyler_estimation.png")

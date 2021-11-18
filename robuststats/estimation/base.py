@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 9th July 2021 4:26:56 pm
+Last Modified: Thursday, 28th October 2021 10:29:52 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -65,7 +65,7 @@ class CovariancesEstimation(BaseEstimator, TransformerMixin):
 
 
 @_deprecate_positional_args
-def empirical_covariance(X, *, assume_centered=False):
+def complex_empirical_covariance(X, *, assume_centered=False):
     """Computes the Maximum likelihood covariance estimator when
     data is complex.
     Parameters
@@ -81,15 +81,6 @@ def empirical_covariance(X, *, assume_centered=False):
     -------
     covariance : ndarray of shape (n_features, n_features)
         Empirical covariance (Maximum Likelihood Estimator).
-    Examples
-    --------
-    >>> from sklearn.covariance import empirical_covariance
-    >>> X = [[1,1,1],[1,1,1],[1,1,1],
-    ...      [0,0,0],[0,0,0],[0,0,0]]
-    >>> empirical_covariance(X)
-    array([[0.25, 0.25, 0.25],
-           [0.25, 0.25, 0.25],
-           [0.25, 0.25, 0.25]])
     """
     X = np.asarray(X, dtype=complex)
 
@@ -158,7 +149,7 @@ class ComplexEmpiricalCovariance(EmpiricalCovariance):
             self.location_ = np.zeros(X.shape[1], dtype=complex)
         else:
             self.location_ = X.mean(0)
-        covariance = empirical_covariance(
+        covariance = complex_empirical_covariance(
             X, assume_centered=self.assume_centered)
 
         self._set_covariance(covariance)

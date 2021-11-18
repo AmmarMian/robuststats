@@ -4,7 +4,7 @@ Created Date: Friday June 18th 2021 - 05:32pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Thursday, 1st July 2021 9:52:47 am
+Last Modified: Thursday, 28th October 2021 10:19:34 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
@@ -244,3 +244,25 @@ def check_Hermitian(a, rtol=1e-05, atol=1e-08):
     """
 
     return np.allclose(a, np.conj(a.T), rtol=rtol, atol=atol)
+
+
+def check_Symmetric(a, rtol=1e-05, atol=1e-08):
+    """Check whether the matrix a in input is a Hermitian matrix to
+    a given precision.
+
+    Parameters
+    ----------
+    a : array-like
+        Input array
+    rtol : float, optional
+        The relative tolerance parameter, by default 1e-05.
+    atol : float, optional
+        The absolute tolerance parameter, by default 1e-08.
+
+    Returns
+    -------
+    bool
+        Returns True if the input array is Symmetric up to the given precision.
+    """
+
+    return np.allclose(a, a.T, rtol=rtol, atol=atol)
