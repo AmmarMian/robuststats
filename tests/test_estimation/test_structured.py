@@ -11,7 +11,7 @@ Copyright 2021, Université Savoie Mont-Blanc
 
 
 from robuststats.estimation.structured import KroneckerStudent,\
-    _generate_egrad_function, _generate_cost_function, KroneckerEllipticalMM,\
+    _generate_egrad_function_kronecker_student, _generate_cost_function_kronecker_student, KroneckerEllipticalMM,\
     _estimate_covariance_kronecker_t_gradient, estimation_cov_kronecker_MM
 from robuststats.models.manifolds import KroneckerHermitianPositiveElliptical
 from robuststats.models.probability import complex_multivariate_t
@@ -79,7 +79,7 @@ def test_KroneckerEllipticalMM():
     assert estimator.B_.shape == (b, b)
 
 
-def test__generate_cost_function():
+def test__generate_cost_function_kronecker_student():
     seed = 762
     rnd.seed(seed)
 
@@ -96,11 +96,11 @@ def test__generate_cost_function():
     model = complex_multivariate_t(shape=covariance, df=df)
     X = model.rvs(size=n_samples)
 
-    cost_function = _generate_cost_function(X, df)
+    cost_function = _generate_cost_function_kronecker_student(X, df)
     assert np.isscalar(cost_function(A, B))
 
 
-def test__generate_egrad_function():
+def test__generate_egrad_function_kronecker_student():
     seed = 763
     rnd.seed(seed)
 
@@ -117,7 +117,7 @@ def test__generate_egrad_function():
     model = complex_multivariate_t(shape=covariance, df=df)
     X = model.rvs(size=n_samples)
 
-    egrad_function = _generate_egrad_function(X, a, b, df)
+    egrad_function = _generate_egrad_function_kronecker_student(X, a, b, df)
     grad_A, grad_B = egrad_function(A, B)
     assert np.iscomplexobj(grad_A)
     assert np.iscomplexobj(grad_B)
