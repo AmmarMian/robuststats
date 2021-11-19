@@ -2,8 +2,8 @@
 
 |          | Status |
 |----------|--------|
-| Python   | ![build](https://img.shields.io/badge/build-passing-red?style=for-the-badge) |
-| Build    | ![python](https://img.shields.io/badge/python-%3E3.7-blue?style=for-the-badge) |
+| Python   | ![build](https://img.shields.io/badge/build-passing-green?style=flat) |
+| Build    | ![python](https://img.shields.io/badge/python-%3E%3D3.7-blue?style=flat) |
 | Coverage | [![codecov](https://codecov.io/gh/AmmarMian/robuststats/branch/main/graph/badge.svg?token=EW5N63WRN6)](https://codecov.io/gh/AmmarMian/robuststats) |
 
 

@@ -1,4 +1,4 @@
-name: pyCovariance-package
+name: robuststats-package
 
 on: [push, pull_request]
 
