@@ -3,7 +3,7 @@ File: autograd_tyler.py
 File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 18th November 2021 4:28:13 pm
+Last Modified: Friday, 19th November 2021 3:12:12 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -91,10 +91,10 @@ if __name__ == "__main__":
     X = X / np.tile(norm_X.reshape(n_samples, 1), [1, n_features])
 
     # Estimating using Tyler's shape matrix estimator
-    # print("Estimating using Tyler's shape matrix estimator")
-    # estimator = TylerShapeMatrix(normalisation="determinant", verbosity=True)
-    # estimator.fit(X)
-    # Q_fp = estimator.covariance_
+    print("Estimating using Tyler's shape matrix estimator")
+    estimator = TylerShapeMatrix(normalisation="determinant", verbosity=True)
+    estimator.fit(X)
+    Q_fp = estimator.covariance_
 
     # Pymanopt setting
     print("Setting up pymanopt")
