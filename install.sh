@@ -6,5 +6,6 @@ conda activate robuststats
 # Dependencies
 conda install python ipython --yes
 pip install -r requirements.txt
+pip install git+https://github.com/pymanopt/pymanopt
 
 python setup.py install
