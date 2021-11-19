@@ -3,13 +3,13 @@ File: linalg.py
 File Created: Thursday, 8th July 2021 6:10:40 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 18th November 2021 5:11:00 pm
+Last Modified: Friday, 19th November 2021 4:42:48 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-import numpy as np
+import autograd.numpy as np
 from scipy.linalg import toeplitz
 from pymanopt.tools.multi import multitransp
 

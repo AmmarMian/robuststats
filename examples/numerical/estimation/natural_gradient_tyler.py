@@ -1,9 +1,9 @@
 '''
-File: autograd_tyler.py
+File: natural_gradient_tyler.py
 File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 5:03:04 pm
+Last Modified: Friday, 19th November 2021 5:07:37 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -22,59 +22,6 @@ from robuststats.utils.linalg import ToeplitzMatrix, invsqrtm
 
 import matplotlib.pyplot as plt
 
-
-def _generate_cost_function(X):
-    """Generate cost function for gradient descent for Tyler cost function
-    as given in eq. (25) of:
-    >Wiesel, A. (2012). Geodesic convexity and covariance estimation.
-    >IEEE transactions on signal processing, 60(12), 6182-6189.
-
-    Parameters
-    ----------
-    X : array-like of shape (n_samples, n_features)
-        Dataset.
-
-    Returns
-    -------
-    callable
-        function to compute the cost at given data by X
-    """
-
-    n, p = X.shape
-
-    @Callable
-    def cost(Q):
-        temp = invsqrtm(Q)@X.T
-        q = np.einsum('ij,ji->i', temp.T, temp)
-        return p*np.sum(np.log(q)) + n*np.log(la.det(Q))
-
-    return cost
-
-
-def _generate_egrad(X, cost):
-    """Generate euclidean gradient corresponding to Tyler cost function.
-
-    Parameters
-    ----------
-    X : array-like of shape (n_samples, n_features)
-        Dataset.
-    cost :
-        cost_function depending on the data X.
-
-    Returns
-    -------
-    callable
-        function to compute the cost at given data by X
-    """
-
-    n, p = X.shape
-
-    @Callable
-    def egrad(Q):
-        res = autograd.grad(cost, argnum=[0])(Q)
-        return res[0]
-
-    return egrad
 
 
 if __name__ == "__main__":
@@ -96,17 +43,6 @@ if __name__ == "__main__":
     estimator.fit(X)
     Q_fp = estimator.covariance_
 
-    # # Pymanopt setting
-    # print("Setting up pymanopt")
-    # manifold = SymmetricPositiveDefinite(n_features)
-    # cost = _generate_cost_function(X)
-    # egrad = _generate_egrad(X, cost)
-    # problem = Problem(manifold=manifold, cost=cost, egrad=egrad)
-    # solver = SteepestDescent()
-
-    # # Solving problem
-    # print("Doing optimisation pymanopt")
-    # Qopt = solver.solve(problem)
 
     # Estimating using natural gradient Tyler's shape matrix estimator
     print("Estimating using natural gradient Tyler's shape matrix estimator")
@@ -129,4 +65,4 @@ if __name__ == "__main__":
     axes[2].set_title(f"Estimated Covariance with gradient descent $N={n_samples}$")
     fig.colorbar(im, ax=axes[2])
     # plt.show()
-    plt.savefig("Tyler_gradient_estimation.png")
+    plt.savefig("./results/Tyler_gradient_estimation.png")

@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 18th November 2021 4:10:44 pm
+Last Modified: Friday, 19th November 2021 5:05:38 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -22,6 +22,13 @@ from ..utils.verbose import logging_tqdm
 from ..utils.linalg import invsqrtm
 from tqdm import tqdm
 
+from pymanopt.function import Callable
+from pymanopt import Problem
+from pymanopt.manifolds.psd import SymmetricPositiveDefinite
+from pymanopt.solvers import SteepestDescent
+import autograd
+import autograd.numpy as a_np
+import autograd.numpy.linalg as a_la
 
 def get_normalisation_function(normalisation=None):
     """Get normalisation function to perform for shape matrix
@@ -69,6 +76,105 @@ def get_normalisation_function(normalisation=None):
 # -----------------------------------------------------------------------------
 # Real-valued estimators
 # -----------------------------------------------------------------------------
+def _generate_realTyler_cost_function(X):
+    """Generate cost function for gradient descent for Tyler cost function
+    as given in eq. (25) of:
+    >Wiesel, A. (2012). Geodesic convexity and covariance estimation.
+    >IEEE transactions on signal processing, 60(12), 6182-6189.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Dataset.
+
+    Returns
+    -------
+    callable
+        function to compute the cost at given data by X
+    """
+
+    n, p = X.shape
+
+    @Callable
+    def cost(Q):
+        temp = invsqrtm(Q)@X.T
+        q = a_np.einsum('ij,ji->i', temp.T, temp)
+        return p*a_np.sum(a_np.log(q)) + n*a_np.log(a_la.det(Q))
+
+    return cost
+
+
+def _generate_realTyler_egrad(X, cost):
+    """Generate euclidean gradient corresponding to Tyler cost function.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Dataset.
+    cost :
+        cost_function depending on the data X and obtained from
+        _generate_realTyler_cost_function.
+
+    Returns
+    -------
+    callable
+        function to compute the cost at given data by X
+    """
+
+    n, p = X.shape
+
+    @Callable
+    def egrad(Q):
+        res = autograd.grad(cost, argnum=[0])(Q)
+        return res[0]
+
+    return egrad
+
+
+@_deprecate_positional_args
+def tyler_shape_matrix_naturalgradient(X, init=None, normalisation='None',
+                                  verbosity=False, **kwargs):
+    """Perform Tyler's estimation of shape matrix with natural 
+    gradient on SPD manifold using pymanopt.
+    Data is always assumed to be centered.
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+    init : array-like of shape (n_features, n_features), optional
+        Initial point of algorithm, by default None.
+    normalisaton : string, optional
+        type of normalisation to perform.
+        Choice between 'trace', 'determinant', 'element'
+        and 'None', by default 'None'.
+    verbosity : bool, optional
+        show progress of algorithm at each iteration, by default False
+    Returns
+    -------
+    array-like of shape (n_features, n_features)
+        estimate.
+    float
+        final error between two iterations.
+    int
+        number of iterations done.
+    """
+    n_samples, n_features = X.shape
+    S = get_normalisation_function(normalisation)
+
+    # Pymanopt setting
+    logging.info("Seeting up pymanopt for natural gradient descent")
+    manifold = SymmetricPositiveDefinite(n_features)
+    cost = _generate_realTyler_cost_function(X)
+    egrad = _generate_realTyler_egrad(X, cost)
+    verbose = verbosity*(verbosity+1)
+    problem = Problem(manifold=manifold, cost=cost,
+                      egrad=egrad, verbosity=verbose)
+    solver = SteepestDescent()
+    sigma = solver.solve(problem, x=init)
+    return sigma/S(sigma), cost(sigma), None
+
+
 @_deprecate_positional_args
 def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
                                   iter_max=30, normalisation='None',
@@ -204,6 +310,11 @@ class TylerShapeMatrix(EmpiricalCovariance):
                 return tyler_shape_matrix_fixedpoint(
                     X, init=init, tol=self.tol, iter_max=self.iter_max,
                     normalisation=self.normalisation,
+                    verbosity=self.verbosity, **kwargs)
+        elif self.method == 'natural gradient':
+            def estimation_function(X, init, **kwargs):
+                return tyler_shape_matrix_naturalgradient(
+                    X, init=init, normalisation=self.normalisation,
                     verbosity=self.verbosity, **kwargs)
         else:
             logging.error("Estimation method not known.")

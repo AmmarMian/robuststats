@@ -3,7 +3,7 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 18th November 2021 4:16:52 pm
+Last Modified: Friday, 19th November 2021 5:14:56 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -11,6 +11,7 @@ Copyright 2021, Université Savoie Mont-Blanc
 
 from robuststats.models.mappings import check_Hermitian, check_Symmetric
 from robuststats.estimation.elliptical import get_normalisation_function,\
+    tyler_shape_matrix_naturalgradient,\
     tyler_shape_matrix_fixedpoint, TylerShapeMatrix,\
     complex_tyler_shape_matrix_fixedpoint, ComplexTylerShapeMatrix
 from robuststats.utils.generation_data import generate_covariance,\
@@ -62,6 +63,33 @@ def test_get_normalisation_function_complex_values():
         np.real(la.det(covariance))**(1/n_features)
     assert element_function(covariance) == covariance[0, 0]
     assert none_function(covariance) == 1
+
+
+def test_tyler_shape_matrix_naturalgradient():
+    seed = 761
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+
+    a = np.random.randn(n_samples, n_features)
+
+    covariance, _, _ = tyler_shape_matrix_naturalgradient(a)
+    assert np.isrealobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Symmetric(covariance)
+
+    covariance, _, _ = tyler_shape_matrix_naturalgradient(a, normalisation='trace')
+    np_test.assert_almost_equal(np.trace(covariance), n_features)
+
+    covariance, _, _ = tyler_shape_matrix_naturalgradient(
+                                a, normalisation='determinant')
+    np_test.assert_almost_equal(la.det(covariance), 1)
+
+    covariance, _, _ = tyler_shape_matrix_naturalgradient(
+                                    a, normalisation='element')
+    np_test.assert_almost_equal(covariance[0, 0], 1)
+
 
 
 def test_tyler_shape_matrix_fixedpoint():
@@ -118,7 +146,7 @@ def test_complex_tyler_shape_matrix_fixedpoint():
     np_test.assert_almost_equal(covariance[0, 0], 1)
 
 
-def test_TylerShapeMatrix():
+def test_TylerShapeMatrixFixedPoint():
     seed = 761
     rnd.seed(seed)
 
@@ -156,6 +184,50 @@ def test_TylerShapeMatrix():
     covariance = generate_covariance(n_features, unit_det=True)
     X = multivariate_normal.rvs(cov=covariance, size=n_samples)
     estimator = TylerShapeMatrix(tol=1e-15, iter_max=100000,
+                                        normalisation='determinant')
+    estimator.fit(X)
+    np_test.assert_array_almost_equal(estimator.covariance_,
+                                      covariance, decimal=1)
+
+
+def test_TylerShapeMatrixNaturalGradient():
+    seed = 761
+    rnd.seed(seed)
+
+    n_features = 170
+    n_samples = 2000
+
+    a = np.random.randn(n_samples, n_features)
+    estimator = TylerShapeMatrix(method="natural gradient")
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    assert np.isrealobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Symmetric(covariance)
+
+    estimator = TylerShapeMatrix(method="natural gradient",
+                                        normalisation='trace')
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    np_test.assert_almost_equal(np.trace(covariance), n_features)
+
+    estimator = TylerShapeMatrix(method="natural gradient",
+                                        normalisation='determinant')
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    np_test.assert_almost_equal(la.det(covariance), 1)
+
+    estimator = TylerShapeMatrix(method="natural gradient",
+                                        normalisation='element')
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    np_test.assert_almost_equal(covariance[0, 0], 1)
+
+    n_features = 3
+    n_samples = 10000*n_features
+    covariance = generate_covariance(n_features, unit_det=True)
+    X = multivariate_normal.rvs(cov=covariance, size=n_samples)
+    estimator = TylerShapeMatrix(method="natural gradient",
                                         normalisation='determinant')
     estimator.fit(X)
     np_test.assert_array_almost_equal(estimator.covariance_,
