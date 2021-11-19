@@ -1,9 +1,9 @@
 [run]
 concurrency=multiprocessing
 
-[nosetests]
-with-coverage = true
-cover-inclusive = true
+# [nosetests]
+# with-coverage = true
+# cover-inclusive = true
 
 
 [report]
@@ -26,5 +26,5 @@ exclude_lines =
 
 ignore_errors = True
 
-# [html]
-# directory = coverage_html_report
+# # [html]
+# # directory = coverage_html_report
