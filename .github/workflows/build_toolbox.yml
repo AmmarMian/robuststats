@@ -36,7 +36,7 @@ jobs:
         flake8 robuststats tests examples --count --exit-zero --statistics
     - name: Test with nose2
       run: |
-        nose2 -v --with-coverage --coverage-report xml term && coverage combine
+        nose2 -v --with-coverage --coverage-report xml --coverage-report term && coverage combine
     - name: "Upload coverage to Codecov"
       uses: codecov/codecov-action@v2
       with:
