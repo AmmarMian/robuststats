@@ -3,7 +3,7 @@ File: natural_gradient_tyler.py
 File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 5:07:37 pm
+Last Modified: Friday, 19th November 2021 5:23:44 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     n_features = 100
     n_samples = 1000
     S = get_normalisation_function("determinant")
-    covariance = ToeplitzMatrix(0.70, n_features, dtype=float)
+    covariance = ToeplitzMatrix(0.85, n_features, dtype=float)
     covariance = covariance / S(covariance)
 
     print("Generating data")
