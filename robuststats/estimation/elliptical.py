@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 5:24:25 pm
+Last Modified: Friday, 19th November 2021 5:25:05 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
