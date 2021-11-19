@@ -5,6 +5,6 @@ conda activate robuststats
 
 # Dependencies
 conda install python ipython --yes
-pip install -y --file requirements.txt
+pip install -r requirements.txt
 
 python setup.py install
