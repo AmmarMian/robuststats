@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 5:25:05 pm
+Last Modified: Monday, 29th November 2021 3:56:37 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -15,7 +15,8 @@ import logging
 
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.covariance import EmpiricalCovariance, empirical_covariance
-from .base import complex_empirical_covariance, ComplexEmpiricalCovariance
+from .base import complex_empirical_covariance, ComplexEmpiricalCovariance,\
+                RealEmpiricalCovariance
 from ..models.mappings import arraytoreal, arraytocomplex
 
 from ..utils.verbose import logging_tqdm
@@ -257,7 +258,7 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
     return sigma/S(sigma), delta, iteration
 
 
-class TylerShapeMatrix(EmpiricalCovariance):
+class TylerShapeMatrix(RealEmpiricalCovariance):
     """Tyler M-estimator of shape matrix with real values.
     See:
     >David E. Tyler.
