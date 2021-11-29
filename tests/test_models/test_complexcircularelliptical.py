@@ -3,7 +3,7 @@ File: test_complexcircularelliptical.py
 File Created: Monday, 21st June 2021 1:58:36 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 3:11:06 pm
+Last Modified: Monday, 29th November 2021 12:03:12 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -17,7 +17,7 @@ from robuststats.models.probability import complex_multivariate_normal_frozen,\
 from robuststats.models.mappings import check_Hermitian
 from robuststats.utils.generation_data import generate_complex_covariance,\
     generate_covariance
-
+import unittest
 # from robuststats.utils.verbose import matprint
 import numpy.random as rnd
 import numpy.testing as np_test
@@ -28,6 +28,22 @@ from scipy.special import loggamma
 import logging
 logging.basicConfig(level='INFO')
 
+# TODO : make unittest classes
+# class TestParameters(unittest.TestCase):
+#     seed = 761
+#     n_features = 17
+#     def test__check_parameters_complex_normal_1(self):
+#         """Test fonction _check_parameters_complex_normal.
+#         Case mean is None and cov real
+#         """
+#         mean = None
+#         covariance = generate_covariance(self.n_features)
+#         mean, covariance = _check_parameters_complex_normal(mean, covariance)
+#         assert np.isrealobj(mean)
+#         assert np.isrealobj(covariance)
+#         assert mean.shape == (self.n_features,)
+#         assert covariance.shape == (self.n_features, self.n_features)
+#         assert check_Hermitian(covariance)
 
 def test__check_parameters_complex_normal():
     seed = 761

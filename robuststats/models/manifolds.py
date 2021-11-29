@@ -4,8 +4,11 @@ Created Date: Saturday June 19th 2021 - 06:20pm
 Author: Ammar Mian
 Contact: ammar.mian@univ-smb.fr
 -----
-Last Modified: Thursday, 18th November 2021 5:07:33 pm
+Last Modified: Monday, 29th November 2021 11:42:50 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+-----
+Many parts are done by Antoine Collas in his fork of pymanopt:
+https://github.com/antoinecollas/pymanopt
 -----
 Copyright (c) 2021 Université Savoie Mont-Blanc
 '''
@@ -22,6 +25,73 @@ from pymanopt.tools.multi import multihconj, multilog
 from pymanopt.tools.multi import multiprod, multitransp
 from ..utils.linalg import multiherm
 
+# ---------------------------------------------------------------------
+# REAL MANIFOLDS
+# ---------------------------------------------------------------------
+class StrictlyPositiveVectors(EuclideanEmbeddedSubmanifold):
+    """Manifold of k strictly positive n-dimensional vectors, denoted ((R++)^n)^k.
+    Since ((R++)^n)^k is isomorphic to
+    (D_n^{++})^k (manifold of positive definite diagonal matrices of size n),
+    the geometry is inherited of the positive definite matrices.
+    """
+    def __init__(self, n, k=1):
+        self._n = n
+        self._k = k
+
+        if k == 1:
+            name = ("Manifold of strictly positive vectors of size {}").format(
+                n)
+        else:
+            name = ("Product manifold of {} \
+                    strictly positive vectors of size {}").format(k, n)
+        dimension = int(k * n)
+        super().__init__(name, dimension)
+
+    @property
+    def typicaldist(self):
+        return np.sqrt(self.dim)
+
+    def inner(self, x, u, v):
+        inv_x = (1./x)
+        return np.sum(inv_x*u*inv_x*v, axis=0, keepdims=True)
+
+    def proj(self, x, u):
+        return u
+
+    def norm(self, x, u):
+        return np.sqrt(self.inner(x, u, u))
+
+    def rand(self):
+        return rnd.uniform(low=1e-6, high=1, size=(self._n, self._k))
+
+    def randvec(self, x):
+        u = rnd.randn(self._n, self._k)
+        return u / self.norm(x, u)
+
+    def zerovec(self, x):
+        return np.zeros((self._n, self._k))
+
+    def dist(self, x, y):
+        return la.norm(np.log(x)-np.log(y), axis=0, keepdims=True)
+
+    def egrad2rgrad(self, x, u):
+        return u*(x**2)
+
+    def ehess2rhess(self, x, egrad, ehess, u):
+        return ehess*(x**2) + egrad*u*x
+
+    def exp(self, x, u):
+        return x*np.exp((1./x)*u)
+
+    def retr(self, x, u):
+        return x + u + (1/2)*(x**-1)*(u**2)
+
+    def log(self, x, y):
+        return x*np.log((1./x)*y)
+
+    def transp(self, x1, x2, d):
+        res = self.proj(x2, x2*(x1**(-1)*d))
+        return res
 
 # ---------------------------------------------------------------------
 # COMPLEX MANIFOLDS
