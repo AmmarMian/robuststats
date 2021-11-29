@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Monday, 29th November 2021 4:29:32 pm
+Last Modified: Monday, 29th November 2021 5:05:23 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -35,6 +35,9 @@ class _FeatureArray():
         self._tol = 1e-5
 
     def __str__(self):
+        return self._array.__str__()
+    
+    def __repr__(self):
         return self._array.__str__()
 
     def __empty(self):
