@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Monday, 29th November 2021 3:56:37 pm
+Last Modified: Tuesday, 30th November 2021 12:01:14 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -18,6 +18,7 @@ from sklearn.covariance import EmpiricalCovariance, empirical_covariance
 from .base import complex_empirical_covariance, ComplexEmpiricalCovariance,\
                 RealEmpiricalCovariance
 from ..models.mappings import arraytoreal, arraytocomplex
+from ..models.cost import Tyler_cost_real
 
 from ..utils.verbose import logging_tqdm
 from ..utils.linalg import invsqrtm
@@ -28,7 +29,7 @@ from pymanopt import Problem
 from pymanopt.manifolds.psd import SymmetricPositiveDefinite
 from pymanopt.solvers import SteepestDescent
 import autograd
-import autograd.numpy as a_np
+import autograd.numpy as np_a
 import autograd.numpy.linalg as a_la
 
 def get_normalisation_function(normalisation=None):
@@ -94,14 +95,9 @@ def _generate_realTyler_cost_function(X):
         function to compute the cost at given data by X
     """
 
-    n, p = X.shape
-
     @Callable
     def cost(Q):
-        temp = invsqrtm(Q)@X.T
-        q = a_np.einsum('ij,ji->i', temp.T, temp)
-        return p*a_np.sum(a_np.log(q)) + n*a_np.log(a_la.det(Q))
-
+        return Tyler_cost_real(X, Q, autograd=True)
     return cost
 
 
@@ -158,7 +154,7 @@ def tyler_shape_matrix_naturalgradient(X, init=None, normalisation='None',
     float
         final error between two iterations.
     int
-        number of iterations done.
+        Always None. For compatibility purposes
     """
     n_samples, n_features = X.shape
     S = get_normalisation_function(normalisation)

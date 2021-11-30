@@ -3,35 +3,38 @@ File: linalg.py
 File Created: Thursday, 8th July 2021 6:10:40 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 4:42:48 pm
+Last Modified: Tuesday, 30th November 2021 11:28:57 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-import autograd.numpy as np
+import numpy as np
 from scipy.linalg import toeplitz
 from pymanopt.tools.multi import multitransp
+from .backend import get_be_autograd
 
-def multihconj(A):
-    return np.conjugate(multitransp(A))
+def multihconj(A, autograd=False):
+    be = get_be_autograd(autograd)
+    return be.conjugate(multitransp(A))
 
 
-def multiherm(A):
+def multiherm(A, autograd=False):
     # Inspired by MATLAB multiherm function by Nicholas Boumal.
-    return 0.5 * (A + multihconj(A))
+    return 0.5 * (A + multihconj(A, autograd))
 
 # From: https://github.com/alexandrebarachant/pyRiemann/
 # blob/master/pyriemann/utils/base.py
-def _matrix_operator(Ci, operator):
+def _matrix_operator(Ci, operator, autograd=False):
     """matrix equivalent of an operator."""
-    eigvals, eigvects = np.linalg.eigh(Ci)
-    eigvals = np.diag(operator(eigvals))
-    Out = np.dot(np.dot(eigvects, eigvals), np.conjugate(eigvects).T)
+    be = get_be_autograd(autograd)
+    eigvals, eigvects = be.linalg.eigh(Ci)
+    eigvals = be.diag(operator(eigvals))
+    Out = be.dot(be.dot(eigvects, eigvals), be.conjugate(eigvects).T)
     return Out
 
 
-def sqrtm(Ci):
+def sqrtm(Ci, autograd=False):
     """Return the matrix square root of a covariance matrix defined by :
 
     .. math::
@@ -45,10 +48,11 @@ def sqrtm(Ci):
     :returns: the matrix square root
 
     """
-    return _matrix_operator(Ci, np.sqrt)
+    be = get_be_autograd(autograd)
+    return _matrix_operator(Ci, be.sqrt, autograd)
 
 
-def logm(Ci):
+def logm(Ci, autograd=False):
     """Return the matrix logarithm of a covariance matrix defined by :
 
     .. math::
@@ -61,10 +65,11 @@ def logm(Ci):
     :returns: the matrix logarithm
 
     """
-    return _matrix_operator(Ci, np.log)
+    be = get_be_autograd(autograd)
+    return _matrix_operator(Ci, be.log, autograd)
 
 
-def expm(Ci):
+def expm(Ci, autograd=False):
     """Return the matrix exponential of a covariance matrix defined by :
 
     .. math::
@@ -77,10 +82,11 @@ def expm(Ci):
     :returns: the matrix exponential
 
     """
-    return _matrix_operator(Ci, np.exp)
+    be = get_be_autograd(autograd)
+    return _matrix_operator(Ci, be.exp, autograd)
 
 
-def invsqrtm(Ci):
+def invsqrtm(Ci, autograd=False):
     """Return the inverse matrix square root of a covariance matrix defined by :
 
     .. math::
@@ -94,12 +100,13 @@ def invsqrtm(Ci):
     :returns: the inverse matrix square root
 
     """
+    be = get_be_autograd(autograd)
     def isqrt(x):
-        return 1. / np.sqrt(x)
-    return _matrix_operator(Ci, isqrt)
+        return 1. / be.sqrt(x)
+    return _matrix_operator(Ci, isqrt, autograd)
 
 
-def powm(Ci, alpha):
+def powm(Ci, alpha, autograd=False):
     """Return the matrix power :math:`\\alpha` of a covariance matrix defined by :
 
     .. math::
@@ -116,11 +123,12 @@ def powm(Ci, alpha):
     """
     def power(x):
         return x**alpha
-    return _matrix_operator(Ci, power)
+    return _matrix_operator(Ci, power, autograd)
 
 
-def hermitian(X):
-    return .5*(X + X.conj().T)
+def hermitian(X, autograd=False):
+    be = get_be_autograd(autograd)
+    return .5*(X + be.conjugate(X.T))
 
 
 def ToeplitzMatrix(rho, p, dtype=complex):

@@ -6,10 +6,9 @@ import robuststats.learning
 import robuststats.models.mappings
 import robuststats.models.manifolds
 import robuststats.models.probability
-import robuststats.models.online
+import robuststats.online
 import robuststats.utils.checking
 import robuststats.utils.generation_data
 import robuststats.utils.linalg
-import robuststats.utils.matrix_operators
 import robuststats.utils.montecarlo
 import robuststats.utils.verbose

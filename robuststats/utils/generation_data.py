@@ -3,7 +3,7 @@ File: generation_data.py
 File Created: Thursday, 18th November 2021 4:15:24 pm
 Author: Antoine Collas
 -----
-Last Modified: Thursday, 18th November 2021 4:16:16 pm
+Last Modified: Tuesday, 30th November 2021 12:15:37 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Taken freely from pyCovariance
@@ -17,7 +17,7 @@ from numpy import random
 from scipy.linalg import toeplitz
 from scipy.stats import lognorm, ortho_group, unitary_group
 
-from .matrix_operators import sqrtm
+from .linalg import sqrtm
 
 
 def generate_covariance(p, unit_det=False):

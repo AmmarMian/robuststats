@@ -1,3 +1,14 @@
+'''
+File: checking.py
+File Created: Monday, 29th November 2021 3:26:01 pm
+Author: Antoine Collas
+-----
+Last Modified: Tuesday, 30th November 2021 11:29:35 am
+Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+-----
+Copyright 2021, Université Savoie Mont-Blanc
+'''
+
 def check_positive(var, var_name, strictly=True):
     """Raise an error if variable is not positive.
     Parameters
