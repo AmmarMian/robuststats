@@ -3,8 +3,8 @@ File: linalg.py
 File Created: Thursday, 8th July 2021 6:10:40 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tuesday, 30th November 2021 11:28:57 am
-Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
+Last Modified: Fri Dec 03 2021
+Modified By: Ammar Mian
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -141,3 +141,48 @@ def ToeplitzMatrix(rho, p, dtype=complex):
                 * the matrix """
 
     return toeplitz(np.power(rho, np.arange(0, p))).astype(dtype)
+
+
+def vec(mat):
+    return mat.ravel('F')
+
+
+def vech(mat):
+    # Gets Fortran-order
+    return mat.T.take(_triu_indices(len(mat)))
+
+
+def _tril_indices(n):
+    rows, cols = np.tril_indices(n)
+    return rows * n + cols
+
+
+def _triu_indices(n):
+    rows, cols = np.triu_indices(n)
+    return rows * n + cols
+
+
+def _diag_indices(n):
+    rows, cols = np.diag_indices(n)
+    return rows * n + cols
+
+
+def unvec(v):
+    k = int(np.sqrt(len(v)))
+    assert(k * k == len(v))
+    return v.reshape((k, k), order='F')
+
+
+def unvech(v):
+    # quadratic formula, correct fp error
+    rows = .5 * (-1 + np.sqrt(1 + 8 * len(v)))
+    rows = int(np.round(rows))
+
+    result = np.zeros((rows, rows), dtype=v.dtype)
+    result[np.triu_indices(rows)] = v
+    result = result + result.conj().T
+
+    # divide diagonal elements by 2
+    result[np.diag_indices(rows)] /= 2
+
+    return result
