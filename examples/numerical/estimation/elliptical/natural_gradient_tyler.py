@@ -3,20 +3,14 @@ File: natural_gradient_tyler.py
 File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tuesday, 30th November 2021 12:14:04 pm
+Last Modified: Wednesday, 8th December 2021 11:05:40 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-import autograd.numpy as np
-import autograd.numpy.linalg as la
-import autograd
-from pymanopt.function import Callable
-from pymanopt import Problem
-from pymanopt.solvers import SteepestDescent, ConjugateGradient
-from pymanopt.manifolds.psd import SymmetricPositiveDefinite
-from robuststats.estimation.elliptical import get_normalisation_function, TylerShapeMatrix
+import numpy as np
+from robuststats.estimation.elliptical import TylerShapeMatrix, get_normalisation_function
 from scipy.stats import multivariate_normal
 from robuststats.utils.linalg import ToeplitzMatrix, invsqrtm
 
@@ -33,9 +27,6 @@ if __name__ == "__main__":
 
     print("Generating data")
     X = multivariate_normal.rvs(cov=covariance, size=n_samples)
-    # Normalisation to go to CAE model
-    norm_X = la.norm(X, axis=1)
-    X = X / np.tile(norm_X.reshape(n_samples, 1), [1, n_features])
 
     # Estimating using fixed-point Tyler's shape matrix estimator
     print("Estimating using fixed point Tyler's shape matrix estimator")

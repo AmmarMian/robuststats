@@ -3,7 +3,7 @@ File: robust_shape_estimation.py
 File Created: Friday, 9th July 2021 10:07:35 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 28th October 2021 10:36:02 am
+Last Modified: Wednesday, 8th December 2021 11:36:36 am
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -52,4 +52,4 @@ if __name__ == '__main__':
     axes[1].set_title(f"Estimated Covariance $N={n_samples}$")
     fig.colorbar(im, ax=axes[1])
     # plt.show()
-    plt.savefig("Tyler_estimation.png")
+    plt.savefig("./results/Tyler_estimation.png")

@@ -3,7 +3,7 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 5:14:56 pm
+Last Modified: Wednesday, 8th December 2021 12:02:39 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -13,6 +13,7 @@ from robuststats.models.mappings import check_Hermitian, check_Symmetric
 from robuststats.estimation.elliptical import get_normalisation_function,\
     tyler_shape_matrix_naturalgradient,\
     tyler_shape_matrix_fixedpoint, TylerShapeMatrix,\
+    complex_tyler_shape_matrix_naturalgradient,\
     complex_tyler_shape_matrix_fixedpoint, ComplexTylerShapeMatrix
 from robuststats.utils.generation_data import generate_covariance,\
     generate_complex_covariance,\
@@ -27,6 +28,10 @@ import numpy.linalg as la
 import logging
 logging.basicConfig(level='INFO')
 
+import nose2
+# -----------------------------------------------------------------------------------
+# Test of utils
+# -----------------------------------------------------------------------------------
 
 def test_get_normalisation_function_real_values():
     seed = 761
@@ -64,6 +69,10 @@ def test_get_normalisation_function_complex_values():
     assert element_function(covariance) == covariance[0, 0]
     assert none_function(covariance) == 1
 
+
+# -----------------------------------------------------------------------------------
+# Test of real-valued estimators
+# -----------------------------------------------------------------------------------
 
 def test_tyler_shape_matrix_naturalgradient():
     seed = 761
@@ -117,33 +126,6 @@ def test_tyler_shape_matrix_fixedpoint():
                                     a, normalisation='element')
     np_test.assert_almost_equal(covariance[0, 0], 1)
 
-
-def test_complex_tyler_shape_matrix_fixedpoint():
-    seed = 761
-    rnd.seed(seed)
-
-    n_features = 17
-    n_samples = 200
-
-    a = np.random.randn(n_samples, n_features) + \
-        1j*np.random.randn(n_samples, n_features)
-
-    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(a)
-    assert np.iscomplexobj(covariance)
-    assert covariance.shape == (n_features, n_features)
-    assert check_Hermitian(covariance)
-
-    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(a, normalisation='trace')
-    np_test.assert_almost_equal(np.real(np.trace(covariance)), n_features)
-
-    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(
-                                a, normalisation='determinant')
-    np_test.assert_almost_equal(
-                        np.real(la.det(covariance)), 1)
-
-    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(
-                                    a, normalisation='element')
-    np_test.assert_almost_equal(covariance[0, 0], 1)
 
 
 def test_TylerShapeMatrixFixedPoint():
@@ -234,8 +216,69 @@ def test_TylerShapeMatrixNaturalGradient():
                                       covariance, decimal=1)
 
 
+
+
+# -----------------------------------------------------------------------------------
+# Test of complex-valued estimators
+# -----------------------------------------------------------------------------------
+def test_complex_tyler_shape_matrix_naturalgradient():
+    seed = 771
+    rnd.seed(seed)
+
+    n_features = 3
+    n_samples = 200
+
+    a = np.random.randn(n_samples, n_features) +\
+          1j * np.random.randn(n_samples, n_features)
+
+    covariance, _, _ = complex_tyler_shape_matrix_naturalgradient(a)
+    assert np.iscomplexobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Hermitian(covariance)
+
+    covariance, _, _ = complex_tyler_shape_matrix_naturalgradient(a, normalisation='trace')
+    np_test.assert_almost_equal(np.trace(covariance), n_features)
+
+    covariance, _, _ = complex_tyler_shape_matrix_naturalgradient(
+                                a, normalisation='determinant')
+    np_test.assert_almost_equal(la.det(covariance), 1)
+
+    covariance, _, _ = complex_tyler_shape_matrix_naturalgradient(
+                                    a, normalisation='element')
+    np_test.assert_almost_equal(covariance[0, 0], 1)
+
+
+
+def test_complex_tyler_shape_matrix_fixedpoint():
+    seed = 772
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+
+    a = np.random.randn(n_samples, n_features) +\
+          1j * np.random.randn(n_samples, n_features)
+
+    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(a)
+    assert np.iscomplexobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Hermitian(covariance)
+
+    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(a, normalisation='trace')
+    np_test.assert_almost_equal(np.real(np.trace(covariance)), n_features)
+
+    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(
+                                a, normalisation='determinant')
+    np_test.assert_almost_equal(
+                        np.real(la.det(covariance)), 1)
+
+    covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(
+                                    a, normalisation='element')
+    np_test.assert_almost_equal(covariance[0, 0], 1)
+
+
 def test_ComplexTylerShapeMatrix():
-    seed = 761
+    seed = 774
     rnd.seed(seed)
 
     n_features = 17
@@ -278,3 +321,53 @@ def test_ComplexTylerShapeMatrix():
     estimator.fit(X)
     np_test.assert_array_almost_equal(estimator.covariance_,
                                       covariance, decimal=1)
+    
+    
+def test_ComplexTylerShapeMatrixNaturalGradient():
+    seed = 775
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+
+    a = np.random.randn(n_samples, n_features) + \
+        1j*np.random.randn(n_samples, n_features)
+    estimator = ComplexTylerShapeMatrix(method="natural gradient")
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    assert np.iscomplexobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Hermitian(covariance)
+
+    estimator = ComplexTylerShapeMatrix(tol=1e-4, iter_max=100, 
+                                    method="natural gradient", normalisation='trace')
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    np_test.assert_almost_equal(np.real(np.trace(covariance)), n_features)
+
+    estimator = ComplexTylerShapeMatrix(tol=1e-4, iter_max=100,
+                                    method="natural gradient", normalisation='determinant')
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    np_test.assert_almost_equal(
+                        np.real(la.det(covariance)), 1)
+
+    estimator = ComplexTylerShapeMatrix(tol=1e-4, iter_max=100,
+                                    method="natural gradient", normalisation='element')
+    estimator.fit(a)
+    covariance = estimator.covariance_
+    np_test.assert_almost_equal(covariance[0, 0], 1)
+
+    n_features = 3
+    n_samples = 10000*n_features
+    covariance = generate_complex_covariance(n_features, unit_det=True)
+    X = sample_complex_normal_distribution(n_samples, covariance).T
+    estimator = ComplexTylerShapeMatrix(tol=1e-15, iter_max=100000,
+                                    method="natural gradient", normalisation='determinant')
+    estimator.fit(X)
+    np_test.assert_array_almost_equal(estimator.covariance_,
+                                      covariance, decimal=1)
+    
+    
+    if __name__ == '__main__':
+        nose2.main()

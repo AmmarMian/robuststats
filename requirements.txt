@@ -1,6 +1,6 @@
 numpy>=01.18.1
 joblib>=0.14.1
-scipy>=1.4.1
+scipy==1.7.3
 scikit-learn>=0.22.1
 nose2
 # pymanopt

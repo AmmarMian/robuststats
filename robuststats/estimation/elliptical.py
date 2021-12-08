@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tuesday, 30th November 2021 12:01:14 pm
+Last Modified: Wednesday, 8th December 2021 12:02:17 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -17,8 +17,9 @@ from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.covariance import EmpiricalCovariance, empirical_covariance
 from .base import complex_empirical_covariance, ComplexEmpiricalCovariance,\
                 RealEmpiricalCovariance
-from ..models.mappings import arraytoreal, arraytocomplex
-from ..models.cost import Tyler_cost_real
+from ..models.mappings import arraytoreal, arraytocomplex, covariancetocomplex
+from ..models.manifolds import HermitianPositiveDefinite
+from ..models.cost import Tyler_cost_real, Tyler_cost_complex
 
 from ..utils.verbose import logging_tqdm
 from ..utils.linalg import invsqrtm
@@ -101,7 +102,7 @@ def _generate_realTyler_cost_function(X):
     return cost
 
 
-def _generate_realTyler_egrad(X, cost):
+def _generate_Tyler_egrad(X, cost):
     """Generate euclidean gradient corresponding to Tyler cost function.
 
     Parameters
@@ -158,12 +159,16 @@ def tyler_shape_matrix_naturalgradient(X, init=None, normalisation='None',
     """
     n_samples, n_features = X.shape
     S = get_normalisation_function(normalisation)
+    
+    # Normalisation to go to CAE model
+    norm_X = la.norm(X, axis=1)
+    Y = X / np.tile(norm_X.reshape(n_samples, 1), [1, n_features])
 
     # Pymanopt setting
     logging.info("Seeting up pymanopt for natural gradient descent")
     manifold = SymmetricPositiveDefinite(n_features)
-    cost = _generate_realTyler_cost_function(X)
-    egrad = _generate_realTyler_egrad(X, cost)
+    cost = _generate_realTyler_cost_function(Y)
+    egrad = _generate_Tyler_egrad(Y, cost)
     verbose = verbosity*(verbosity+1)
     problem = Problem(manifold=manifold, cost=cost,
                       egrad=egrad, verbosity=verbose)
@@ -219,8 +224,7 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
 
     if verbosity:
         pbar_v = tqdm(total=iter_max)
-    else:
-        pbar = logging_tqdm(total=iter_max)
+
     while (delta > tol) and (iteration < iter_max):
         # compute expression of Tyler estimator
         temp = invsqrtm(sigma)@X.T
@@ -239,14 +243,9 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         if verbosity:
             pbar_v.update()
             pbar_v.set_description(f'(err={delta})', refresh=True)
-        else:
-            pbar.update()
-            pbar.set_description(f'(err={delta})', refresh=True)
 
     if verbosity:
         pbar_v.close()
-    else:
-        pbar.close()
 
     if iteration == iter_max:
         logging.warning('Estimation algorithm did not converge')
@@ -301,7 +300,7 @@ class TylerShapeMatrix(RealEmpiricalCovariance):
         self.iteration_ = 0
 
     def set_method(self):
-        # TODO: Add geodesic gradient and BCD
+        # TODO: Add BCD
         if self.method == 'fixed-point':
             def estimation_function(X, init, **kwargs):
                 return tyler_shape_matrix_fixedpoint(
@@ -358,6 +357,73 @@ class TylerShapeMatrix(RealEmpiricalCovariance):
 # -----------------------------------------------------------------------------
 # Complex-valued estimators
 # -----------------------------------------------------------------------------
+def _generate_complexTyler_cost_function(X):
+    """Complex version of _generate_realTyler_cost_function
+    """
+    @Callable
+    def cost(Q):
+        return Tyler_cost_complex(X, Q, autograd=True)
+    return cost
+
+
+@_deprecate_positional_args
+def complex_tyler_shape_matrix_naturalgradient(X, init=None, normalisation='None',
+                                  verbosity=False, **kwargs):
+    """Perform Tyler's estimation of shape matrix with natural 
+    gradient on HPD manifold using pymanopt.
+    Data is always assumed to be centered.
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+    init : array-like of shape (n_features, n_features), optional
+        Initial point of algorithm, by default None.
+    normalisaton : string, optional
+        type of normalisation to perform.
+        Choice between 'trace', 'determinant', 'element'
+        and 'None', by default 'None'.
+    verbosity : bool, optional
+        show progress of algorithm at each iteration, by default False
+    Returns
+    -------
+    array-like of shape (n_features, n_features)
+        estimate.
+    float
+        final error between two iterations.
+    int
+        Always None. For compatibility purposes
+    """
+    X_real = arraytoreal(X)
+    Sigma, cost_value, _ = tyler_shape_matrix_naturalgradient(
+        X_real, init=init, normalisation='None',
+        verbosity=verbosity, **kwargs
+    )
+    S = get_normalisation_function(normalisation)
+    Sigma = covariancetocomplex(Sigma)
+    Sigma = (Sigma + np.conj(Sigma).T)/2
+    return Sigma/S(Sigma), cost_value, None
+    # TODO :Debug why this doesn't work
+    # n_samples, n_features = X.shape
+    # S = get_normalisation_function(normalisation)
+
+    # # Normalisation to go to CAE model
+    # norm_X = la.norm(X, axis=1)
+    # Y = X / np.tile(norm_X.reshape(n_samples, 1), [1, n_features])
+
+    # # Pymanopt setting
+    # logging.info("Seeting up pymanopt for natural gradient descent")
+    # manifold = HermitianPositiveDefinite(n_features)
+    # cost = _generate_complexTyler_cost_function(Y)
+    # egrad = _generate_Tyler_egrad(Y, cost)
+    # verbose = verbosity*(verbosity+1)
+    # problem = Problem(manifold=manifold, cost=cost,
+    #                   egrad=egrad, verbosity=verbose)
+    # solver = SteepestDescent()
+    # sigma = solver.solve(problem, x=init)
+    # return sigma/S(sigma), -cost(sigma), None
+
+
 @_deprecate_positional_args
 def complex_tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
                                   iter_max=30, normalisation='None',
@@ -405,8 +471,7 @@ def complex_tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
 
     if verbosity:
         pbar_v = tqdm(total=iter_max)
-    else:
-        pbar = logging_tqdm(total=iter_max)
+
     while (delta > tol) and (iteration < iter_max):
         # compute expression of Tyler estimator
         temp = invsqrtm(sigma)@X.T
@@ -425,14 +490,11 @@ def complex_tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         if verbosity:
             pbar_v.update()
             pbar_v.set_description(f'(err={delta})', refresh=True)
-        else:
-            pbar.update()
-            pbar.set_description(f'(err={delta})', refresh=True)
+
 
     if verbosity:
         pbar_v.close()
-    else:
-        pbar.close()
+
 
     if iteration == iter_max:
         logging.warning('Estimation algorithm did not converge')
@@ -487,12 +549,18 @@ class ComplexTylerShapeMatrix(ComplexEmpiricalCovariance):
         self.iteration_ = 0
 
     def set_method(self):
-        # TODO: Add geodesic gradient and BCD
+        # TODO: Add BCD
         if self.method == 'fixed-point':
             def estimation_function(X, init, **kwargs):
                 return complex_tyler_shape_matrix_fixedpoint(
                     X, init=init, tol=self.tol, iter_max=self.iter_max,
                     normalisation=self.normalisation,
+                    verbosity=self.verbosity, **kwargs)
+
+        elif self.method == 'natural gradient':
+            def estimation_function(X, init, **kwargs):
+                return complex_tyler_shape_matrix_naturalgradient(
+                    X, init=init, normalisation=self.normalisation,
                     verbosity=self.verbosity, **kwargs)
         else:
             logging.error("Estimation method not known.")
