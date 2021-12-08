@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Monday, 29th November 2021 5:05:23 pm
+Last Modified: Wednesday, 8th December 2021 4:08:00 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -315,6 +315,7 @@ class ComplexEmpiricalCovariance(RealEmpiricalCovariance):
         """Saves the covariance and precision estimates
         Storage is done accordingly to `self.store_precision`.
         Precision stored only if invertible.
+
         Parameters
         ----------
         covariance : array-like of shape (n_features, n_features)
