@@ -3,7 +3,7 @@ File: elliptical.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 12:02:17 pm
+Last Modified: Wednesday, 8th December 2021 2:54:29 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -20,6 +20,7 @@ from .base import complex_empirical_covariance, ComplexEmpiricalCovariance,\
 from ..models.mappings import arraytoreal, arraytocomplex, covariancetocomplex
 from ..models.manifolds import HermitianPositiveDefinite
 from ..models.cost import Tyler_cost_real, Tyler_cost_complex
+from ..models.probability import complex_multivariate_t
 
 from ..utils.verbose import logging_tqdm
 from ..utils.linalg import invsqrtm
@@ -357,6 +358,79 @@ class TylerShapeMatrix(RealEmpiricalCovariance):
 # -----------------------------------------------------------------------------
 # Complex-valued estimators
 # -----------------------------------------------------------------------------
+def complex_student_t_mle_fixed_point(X, df, init=None, tol=1e-4,
+                                iter_max=30, verbosity=False, **kwargs):
+    """Perform Student-t's fixed-point estimation of covariance matrix.
+    Data is always assumed to be centered and complex.
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+    df : float
+        Degrees of freedom of target multivariate student-t distribution
+    init : array-like of shape (n_features, n_features), optional
+        Initial point of algorithm, by default None.
+    tol : float, optional
+        tolerance for convergence of algorithm, by default 1e-4.
+    iter_max : int, optional
+        number of maximum iterations, by default 30.
+    verbosity : bool, optional
+        show progress of algorithm at each iteration, by default False
+    Returns
+    -------
+    array-like of shape (n_features, n_features)
+        estimate.
+    float
+        final error between two iterations.
+    int
+        number of iterations done.
+    """
+    # Initialisation
+    N, p = X.shape
+    
+    if df<=0:
+        raise AttributeError("Degrees of freedom cannot be less than or equal to 0.")
+    
+    if init is None:
+        sigma = complex_empirical_covariance(X)
+    else:
+        sigma = init
+    delta = np.inf  # Distance between two iterations
+    iteration = 0
+
+    if verbosity:
+        pbar_v = tqdm(total=iter_max)
+
+    while (delta > tol) and (iteration < iter_max):
+        # compute expression of Tyler estimator
+        temp = invsqrtm(sigma)@X.T
+        tau = np.einsum('ij,ji->i', temp.conj().T, temp)
+        tau = df + np.real(tau)
+        temp = X.T / np.sqrt(tau)
+        sigma_new = ((df+p)/N) * temp@temp.conj().T
+
+        # condition for stopping
+        delta = la.norm(sigma_new - sigma) / la.norm(sigma)
+        iteration += 1
+
+        # updating sigma
+        sigma = sigma_new
+
+        if verbosity:
+            pbar_v.update()
+            pbar_v.set_description(f'(err={delta})', refresh=True)
+
+    if verbosity:
+        pbar_v.close()
+
+
+    if iteration == iter_max:
+        logging.warning('Estimation algorithm did not converge')
+
+    return sigma, delta, iteration
+
+
 def _generate_complexTyler_cost_function(X):
     """Complex version of _generate_realTyler_cost_function
     """
@@ -500,6 +574,87 @@ def complex_tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         logging.warning('Estimation algorithm did not converge')
 
     return sigma/S(sigma), delta, iteration
+
+
+class ComplexCenteredStudentMLE(ComplexEmpiricalCovariance):
+    """Student-t's estimation of Covariance matrix when data is
+    centered and the degrees of freedom is known. 
+    The approach used is by using a fiexed-point estimator as described
+    for example in eq (14) of :
+    > Draskovic, Gordana & Pascal, Frederic. (2018). 
+    >New Insights Into the Statistical Properties of $M$ -Estimators. 
+    >IEEE Transactions on Signal Processing. PP. 10.1109/TSP.2018.2841892. 
+    
+
+    Since the choice of the division by 2 of the degrees of freedom depends
+    upon the choice done in the pdf of Student-t, we chose to be coherent with
+    scipy.stats implementation of multivariate t model.
+    
+    Parameters
+    ----------
+    df : float
+        Degrees of freedom of target multivariate student-t distribution
+    tol : float, optional
+        criterion for error between two iterations, by default 1e-4.
+    iter_max : int, optional
+        number of maximum iterations of algorithm, by default 100.
+    verbosity : bool, optional
+        show a progressbar of algorithm, by default False.
+    Attributes
+    ----------
+    covariance_ : ndarray of shape (n_features, n_features)
+        Estimated covariance matrix
+    err_ : float
+        final error between two iterations.
+    iteration_ : int
+        number of iterations done for estimation.
+    """
+    def __init__(self, df, tol=1e-4, 
+                 iter_max=100,
+                 verbosity=False):
+        super().__init__()
+        self.df = df
+        self.verbosity = verbosity
+        self.tol = tol
+        self.iter_max = iter_max
+
+        self.err_ = np.inf
+        self.iteration_ = 0
+
+    def fit(self, X, y=None, init=None, **kwargs):
+        """Fits the Student-t M-estimator of covariance matrix.
+        
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+          Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+        y : Ignored
+            Not used, present for API consistency by convention.
+        init : array-like of shape (n_features, n_features), optional
+            Initial point to start the estimation.
+        Returns
+        -------
+        self : object
+        """
+        if self.iteration_ > 0 and self.verbosity:
+            logging.warning("Overwriting previous fit.")
+        X = self._validate_data(X)
+        covariance, err, iteration = complex_student_t_mle_fixed_point(
+            X, self.df, init, self.tol, self.iter_max, self.verbosity
+        )
+        self._set_covariance(covariance)
+        self.err_ = err
+        self.iteration_ = iteration
+        return self
+
+    def score(self, X_test, y=None, model='Gaussian'):
+        if self.iteration_ ==0:
+            logging.error("Estimator hasn't been fitted yet !")
+            return None
+        logpdf = complex_multivariate_t(
+            shape=self.covariance_, df=self.df).logpdf(X)
+        return np.sum(logpdf)
 
 
 class ComplexTylerShapeMatrix(ComplexEmpiricalCovariance):

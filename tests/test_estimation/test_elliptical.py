@@ -3,7 +3,7 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 12:02:39 pm
+Last Modified: Wednesday, 8th December 2021 3:24:11 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -14,10 +14,12 @@ from robuststats.estimation.elliptical import get_normalisation_function,\
     tyler_shape_matrix_naturalgradient,\
     tyler_shape_matrix_fixedpoint, TylerShapeMatrix,\
     complex_tyler_shape_matrix_naturalgradient,\
-    complex_tyler_shape_matrix_fixedpoint, ComplexTylerShapeMatrix
+    complex_tyler_shape_matrix_fixedpoint, ComplexTylerShapeMatrix,\
+    complex_student_t_mle_fixed_point, ComplexCenteredStudentMLE
 from robuststats.utils.generation_data import generate_covariance,\
     generate_complex_covariance,\
     sample_complex_normal_distribution
+from robuststats.models.probability import complex_multivariate_t
 
 from scipy.stats import multivariate_normal
 import numpy.random as rnd
@@ -221,6 +223,22 @@ def test_TylerShapeMatrixNaturalGradient():
 # -----------------------------------------------------------------------------------
 # Test of complex-valued estimators
 # -----------------------------------------------------------------------------------
+def test_complex_student_t_mle_fixed_point():
+    seed = 777
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+
+    a = np.random.randn(n_samples, n_features) +\
+          1j * np.random.randn(n_samples, n_features)
+
+    covariance, _, _ = complex_student_t_mle_fixed_point(a, df=300)
+    assert np.iscomplexobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Hermitian(covariance)
+    
+
 def test_complex_tyler_shape_matrix_naturalgradient():
     seed = 771
     rnd.seed(seed)
@@ -275,6 +293,36 @@ def test_complex_tyler_shape_matrix_fixedpoint():
     covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(
                                     a, normalisation='element')
     np_test.assert_almost_equal(covariance[0, 0], 1)
+
+
+
+def test_ComplexCenteredStudentMLE():
+    seed = 779
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+    df = 30
+    covariance = generate_complex_covariance(n_features)
+    model = complex_multivariate_t(shape=covariance, df=df)
+    X = model.rvs(size=n_samples)
+    estimator = ComplexCenteredStudentMLE(df=df)
+    estimator.fit(X)
+    covariance_est = estimator.covariance_
+    assert np.iscomplexobj(covariance_est)
+    assert covariance_est.shape == (n_features, n_features)
+    assert check_Hermitian(covariance_est)
+
+
+    n_features = 3
+    n_samples = 10000*n_features
+    covariance = generate_complex_covariance(n_features)
+    model = complex_multivariate_t(shape=covariance, df=df)
+    X = model.rvs(size=n_samples)
+    estimator = ComplexCenteredStudentMLE(df=df, iter_max=1000)
+    estimator.fit(X)
+    np_test.assert_array_almost_equal(estimator.covariance_,
+                                      covariance, decimal=1)
 
 
 def test_ComplexTylerShapeMatrix():
