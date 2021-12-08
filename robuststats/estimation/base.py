@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 4:08:00 pm
+Last Modified: Wednesday, 8th December 2021 5:19:43 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -226,42 +226,73 @@ class CovariancesEstimation(BaseEstimator, TransformerMixin):
     The difference is that estimator is not a string but an instance
     of a scikit-learn compatible estimator of covariance.
     """
-    def __init__(self, estimator, **kwargs):
+    def __init__(self, estimator, n_jobs=1, **kwargs):
         self.estimator = estimator
+        self.n_jobs = n_jobs
 
     def fit(self, X, y=None):
         """Fit.
         Do nothing. For compatibility purpose.
         Parameters
         ----------
-        X : ndarray, shape (n_trials, n_channels, n_samples)
+        X : ndarray, shape (n_trials, n_samples, n_features)
             ndarray of trials.
         y : ndarray shape (n_trials,)
             labels corresponding to each trial, not used.
         Returns
         -------
-        self : Covariances instance
-            The Covariances instance.
+        self : CovariancesEstimation instance
+            The CovariancesEstimation instance.
         """
         return self
 
-    def transform(self, X):
+    def transform(self, X, **kwargs):
         """Estimate covariance matrices.
         Parameters
         ----------
-        X : ndarray, shape (n_trials, n_channels, n_samples)
+        X : ndarray, shape (n_trials, n_samples, n_features)
             ndarray of trials.
         Returns
         -------
-        covmats : ndarray, shape (n_trials, n_channels, n_channels)
+        covmats : ndarray, shape (n_trials, n_features, n_features)
             ndarray of covariance matrices for each trials.
         """
-        Nt, Ne, Ns = X.shape
-        covmats = np.zeros((Nt, Ne, Ne), dtype=X.dtype)
-        for i in range(Nt):
-            covmats[i, :, :] = self.estimator.fit_transform(X[i, :, :])
+        n_trials, n_samples, n_features = X.shape
+        covmats = np.zeros((n_trials, n_features, n_features), dtype=X.dtype)
+        if self.n_jobs == 1:
+            for i in range(n_trials):
+                self.estimator.fit(X[i, :, :], **kwargs)
+                covmats[i, :, :] = self.estimator.covariance_
+        else:
+            cov_list = Parallel(n_jobs=self.n_jobs)(
+                    delayed(_fit_transform_covariance_copy)(self.estimator, x, **kwargs) 
+                    for x in X
+                )
+            for i, cov in enumerate(cov_list):
+                covmats[i, :, :] = cov
         return covmats
 
+
+def _fit_transform_covariance_copy(estimator, x, **kwargs):
+    """Function to do a fit of a scikit-learn estimator and returns the covariance.
+    Do a deepcopy of the estimator to avoid serialization errors when used in parallel
+
+    Parameters
+    ----------
+    estimator : scikit-learn object that inherits EmpiricalCovariance
+        the estimator used. The parameters of the fit must already been initialized 
+        in the object.
+    x : ndarray, shape (n_samples, n_features)
+        Data on which perform covariance estimation.
+
+    Returns
+    -------
+    ndarray, shape (n_features, n_features)
+        estimated covariance.
+    """
+    est = deepcopy(estimator)
+    est.fit(x, **kwargs)
+    return est.covariance_
 
 # -----------------------------------------------------------------------
 # Covariances classes
