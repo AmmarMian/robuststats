@@ -3,7 +3,7 @@ File: autograd_tyler.py
 File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 19th November 2021 5:03:04 pm
+Last Modified: Thursday, 9th December 2021 3:53:11 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -16,7 +16,7 @@ from pymanopt.function import Callable
 from pymanopt import Problem
 from pymanopt.solvers import SteepestDescent, ConjugateGradient
 from pymanopt.manifolds.psd import SymmetricPositiveDefinite
-from robuststats.estimation.elliptical import get_normalisation_function, TylerShapeMatrix
+from robuststats.estimation.covariance import get_normalisation_function, TylerShapeMatrix
 from scipy.stats import multivariate_normal
 from robuststats.utils.linalg import ToeplitzMatrix, invsqrtm
 

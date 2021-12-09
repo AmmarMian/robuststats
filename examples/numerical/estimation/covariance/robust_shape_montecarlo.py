@@ -3,7 +3,7 @@ File: robust_shape_montecarlo.py
 File Created: Wednesday, 7th July 2021 1:07:17 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 11:44:28 am
+Last Modified: Thursday, 9th December 2021 3:53:11 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -15,7 +15,7 @@ from tqdm import trange
 import plotly.express as px
 from joblib import Parallel, delayed
 from robuststats.estimation.base import ComplexEmpiricalCovariance
-from robuststats.estimation.elliptical import ComplexTylerShapeMatrix
+from robuststats.estimation.covariance import ComplexTylerShapeMatrix
 from robuststats.models.probability import complex_multivariate_normal,\
                                            complex_multivariate_t
 from robuststats.utils.montecarlo import temp_seed

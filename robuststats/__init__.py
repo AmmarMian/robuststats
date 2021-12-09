@@ -1,6 +1,6 @@
 import robuststats.detection
 import robuststats.estimation.base
-import robuststats.estimation.elliptical
+import robuststats.estimation.covariance
 import robuststats.estimation.structured
 import robuststats.learning
 import robuststats.models.mappings

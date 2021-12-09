@@ -3,15 +3,15 @@ File: robust_shape_estimation.py
 File Created: Friday, 9th July 2021 10:07:35 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 2:52:43 pm
+Last Modified: Thursday, 9th December 2021 5:28:30 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
 import numpy as np
-from robuststats.estimation.elliptical import ComplexTylerShapeMatrix, \
-    get_normalisation_function, ComplexCenteredStudentMLE
+from robuststats.estimation.covariance import ComplexTylerShapeMatrix, \
+    get_normalisation_function, ComplexCenteredStudentMLE, ComplexHuberMEstimator
 from robuststats.models.probability import complex_multivariate_t
 from robuststats.utils.linalg import ToeplitzMatrix
 
@@ -44,11 +44,16 @@ if __name__ == '__main__':
     estimator.fit(X)
     
     print("Performing Student-t MLE estimation of covariance matrix")
-    estimator_student = ComplexCenteredStudentMLE(df=3, verbosity=True, iter_max=1000)
+    estimator_student = ComplexCenteredStudentMLE(df=3, verbosity=True, iter_max=100)
     estimator_student.fit(X)
+    
+    print("Performing Huber's M-estimation of covariance matrix")
+    estimator_huber = ComplexHuberMEstimator(0, b=1, verbosity=True, iter_max=100)
+    estimator_huber.estimate_a(X, q=0.9)
+    estimator_huber.fit(X)
 
     print("Saving plots to Robust_shape_estimation.png")
-    fig, axes = plt.subplots(1, 3, figsize=(21, 9))
+    fig, axes = plt.subplots(1, 4, figsize=(25, 6))
     im = axes[0].imshow(np.abs(covariance), aspect='auto')
     axes[0].set_title("True Covariance")
     fig.colorbar(im, ax=axes[0])
@@ -60,6 +65,10 @@ if __name__ == '__main__':
     im = axes[2].imshow(np.abs(estimator_student.covariance_), aspect='auto')
     axes[2].set_title(f"Estimated Covariance with Student-t MLE $N={n_samples}$")
     fig.colorbar(im, ax=axes[2])
+    
+    im = axes[3].imshow(np.abs(estimator_huber.covariance_), aspect='auto')
+    axes[3].set_title(f"Estimated Covariance with Huber's M-estimator $N={n_samples}$")
+    fig.colorbar(im, ax=axes[3])
     
     # plt.show()
     plt.savefig("./results/Robust_shape_estimation.png")

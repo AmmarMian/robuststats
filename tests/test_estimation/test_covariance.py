@@ -3,20 +3,22 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 3:34:57 pm
+Last Modified: Thursday, 9th December 2021 5:35:08 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
 from robuststats.models.mappings import check_Hermitian, check_Symmetric
-from robuststats.estimation.elliptical import get_normalisation_function,\
+from robuststats.estimation.covariance import get_normalisation_function,\
     tyler_shape_matrix_naturalgradient,\
     tyler_shape_matrix_fixedpoint, TylerShapeMatrix,\
     complex_tyler_shape_matrix_naturalgradient,\
     complex_tyler_shape_matrix_fixedpoint, ComplexTylerShapeMatrix,\
     complex_student_t_mle_fixed_point, ComplexCenteredStudentMLE,\
-    student_t_mle_fixed_point, CenteredStudentMLE
+    student_t_mle_fixed_point, CenteredStudentMLE,\
+    huber_m_estimator_fixed_point, HuberMEstimator,\
+    complex_huber_m_estimator_fixed_point, ComplexHuberMEstimator
 from robuststats.utils.generation_data import generate_covariance,\
     generate_complex_covariance,\
     sample_complex_normal_distribution
@@ -76,6 +78,21 @@ def test_get_normalisation_function_complex_values():
 # -----------------------------------------------------------------------------------
 # Test of real-valued estimators
 # -----------------------------------------------------------------------------------
+def test_huber_m_estimator_fixed_point():
+    seed = 7776
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+
+    a = np.random.randn(n_samples, n_features)
+
+    covariance, _, _ = huber_m_estimator_fixed_point(a, a=1, b=1)
+    assert np.isrealobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Symmetric(covariance)
+    
+
 def test_student_t_mle_fixed_point():
     seed = 7777
     rnd.seed(seed)
@@ -142,6 +159,37 @@ def test_tyler_shape_matrix_fixedpoint():
     covariance, _, _ = tyler_shape_matrix_fixedpoint(
                                     a, normalisation='element')
     np_test.assert_almost_equal(covariance[0, 0], 1)
+
+
+
+def test_HuberMEstimator():
+    seed = 7779
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+    df = 30
+    covariance = generate_covariance(n_features)
+    model = multivariate_t(shape=covariance, df=df)
+    X = model.rvs(size=n_samples)
+    estimator = HuberMEstimator(a=1)
+    estimator.fit(X)
+    covariance_est = estimator.covariance_
+    assert np.isrealobj(covariance_est)
+    assert covariance_est.shape == (n_features, n_features)
+    assert check_Symmetric(covariance_est)
+
+
+    n_features = 3
+    n_samples = 10000*n_features
+    covariance = generate_covariance(n_features)
+    model = multivariate_t(shape=covariance, df=df)
+    X = model.rvs(size=n_samples)
+    estimator = HuberMEstimator(a=1, iter_max=1000)
+    estimator.fit(X)
+    np_test.assert_array_almost_equal(estimator.covariance_,
+                                      covariance, decimal=1)
+
 
 
 def test_CenteredStudentMLE():
@@ -266,6 +314,22 @@ def test_TylerShapeMatrixNaturalGradient():
 # -----------------------------------------------------------------------------------
 # Test of complex-valued estimators
 # -----------------------------------------------------------------------------------
+def test_complex_huber_m_estimator_fixed_point():
+    seed = 7774
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+
+    X = np.random.randn(n_samples, n_features) +\
+          1j * np.random.randn(n_samples, n_features)
+
+    covariance, _, _ = complex_huber_m_estimator_fixed_point(X, a=1, b=1)
+    assert np.iscomplexobj(covariance)
+    assert covariance.shape == (n_features, n_features)
+    assert check_Hermitian(covariance)
+    
+
 def test_complex_student_t_mle_fixed_point():
     seed = 777
     rnd.seed(seed)
@@ -336,6 +400,35 @@ def test_complex_tyler_shape_matrix_fixedpoint():
     covariance, _, _ = complex_tyler_shape_matrix_fixedpoint(
                                     a, normalisation='element')
     np_test.assert_almost_equal(covariance[0, 0], 1)
+
+
+def test_ComplexHuberMEstimator():
+    seed = 7772
+    rnd.seed(seed)
+
+    n_features = 17
+    n_samples = 200
+    df = 30
+    covariance = generate_complex_covariance(n_features)
+    model = complex_multivariate_t(shape=covariance, df=df)
+    X = model.rvs(size=n_samples)
+    estimator = ComplexHuberMEstimator(a=1)
+    estimator.fit(X)
+    covariance_est = estimator.covariance_
+    assert np.iscomplexobj(covariance_est)
+    assert covariance_est.shape == (n_features, n_features)
+    assert check_Hermitian(covariance_est)
+
+
+    n_features = 3
+    n_samples = 10000*n_features
+    covariance = generate_complex_covariance(n_features)
+    model = complex_multivariate_t(shape=covariance, df=df)
+    X = model.rvs(size=n_samples)
+    estimator = ComplexHuberMEstimator(a=1, iter_max=1000)
+    estimator.fit(X)
+    np_test.assert_array_almost_equal(estimator.covariance_,
+                                      covariance, decimal=1)
 
 
 

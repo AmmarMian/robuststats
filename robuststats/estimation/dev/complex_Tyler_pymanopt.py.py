@@ -3,7 +3,7 @@ File: Tyler_pymanopt.py
 File Created: Friday, 9th July 2021 11:04:56 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 18th November 2021 4:27:42 pm
+Last Modified: Thursday, 9th December 2021 3:53:11 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -17,7 +17,7 @@ import numpy.linalg as la
 from pymanopt.function import Autograd, Callable
 from pymanopt import Problem
 from pymanopt.solvers import SteepestDescent, ConjugateGradient
-from robuststats.estimation.elliptical import get_normalisation_function
+from robuststats.estimation.covariance import get_normalisation_function
 from pymanopt.manifolds.hpd import SpecialHermitianPositiveDefinite, HermitianPositiveDefinite
 from robuststats.utils.linalg import invsqrtm
 

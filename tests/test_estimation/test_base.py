@@ -3,7 +3,7 @@ File: test_base.py
 File Created: Sunday, 20th June 2021 7:11:16 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 5:18:31 pm
+Last Modified: Thursday, 9th December 2021 3:53:11 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -12,7 +12,7 @@ Copyright 2021, Université Savoie Mont-Blanc
 from robuststats.models.mappings import check_Hermitian
 from robuststats.estimation.base import ComplexEmpiricalCovariance,\
     complex_empirical_covariance, CovariancesEstimation
-from robuststats.estimation.elliptical import TylerShapeMatrix, \
+from robuststats.estimation.covariance import TylerShapeMatrix, \
     ComplexTylerShapeMatrix
 
 import numpy.random as rnd

@@ -1,62 +1,59 @@
 '''
-File: complex_natural_gradient_tyler.py
-File Created: Wednesday, 8th December 2021 10:50:44 am
+File: natural_gradient_tyler.py
+File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 11:34:14 am
+Last Modified: Thursday, 9th December 2021 3:53:11 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-
 import numpy as np
-from robuststats.estimation.elliptical import get_normalisation_function, ComplexTylerShapeMatrix
-from robuststats.models.probability import complex_multivariate_t
-from robuststats.utils.generation_data import generate_complex_covariance
-from robuststats.utils.linalg import invsqrtm, ToeplitzMatrix
+from robuststats.estimation.covariance import TylerShapeMatrix, get_normalisation_function
+from scipy.stats import multivariate_normal
+from robuststats.utils.linalg import ToeplitzMatrix, invsqrtm
 
 import matplotlib.pyplot as plt
 
 
 
 if __name__ == "__main__":
-    n_features = 250
-    n_samples = 5000
+    n_features = 100
+    n_samples = 10000
     S = get_normalisation_function("determinant")
-    covariance = ToeplitzMatrix(0.8+0.4j, n_features, dtype=np.complex128)
+    covariance = ToeplitzMatrix(0.95, n_features, dtype=float)
     covariance = covariance / S(covariance)
 
     print("Generating data")
-    X = complex_multivariate_t.rvs(shape=covariance, df=30, size=n_samples)
-
+    X = multivariate_normal.rvs(cov=covariance, size=n_samples)
 
     # Estimating using fixed-point Tyler's shape matrix estimator
     print("Estimating using fixed point Tyler's shape matrix estimator")
-    estimator = ComplexTylerShapeMatrix(normalisation="determinant", verbosity=True)
+    estimator = TylerShapeMatrix(normalisation="determinant", verbosity=True)
     estimator.fit(X)
     Q_fp = estimator.covariance_
 
 
     # Estimating using natural gradient Tyler's shape matrix estimator
     print("Estimating using natural gradient Tyler's shape matrix estimator")
-    estimator = ComplexTylerShapeMatrix(method="natural gradient",
+    estimator = TylerShapeMatrix(method="natural gradient",
         normalisation="determinant", verbosity=True)
     estimator.fit(X)
     Qopt = estimator.covariance_
 
-    print("Saving plots to Complex_Tyler_gradient_estimation.png")
+    print("Saving plots to Tyler_gradient_estimation.png")
     fig, axes = plt.subplots(1, 3, figsize=(26, 9))
-    im = axes[0].imshow(np.abs(covariance), aspect='auto')
+    im = axes[0].imshow(covariance, aspect='auto')
     axes[0].set_title("True Covariance")
     fig.colorbar(im, ax=axes[0])
 
-    im = axes[1].imshow(np.abs(Q_fp), aspect='auto')
+    im = axes[1].imshow(Q_fp, aspect='auto')
     axes[1].set_title(f"Estimated Covariance with Fixed point $N={n_samples}$")
     fig.colorbar(im, ax=axes[1])
 
-    im = axes[2].imshow(np.abs(Qopt), aspect='auto')
+    im = axes[2].imshow(Qopt, aspect='auto')
     axes[2].set_title(f"Estimated Covariance with gradient descent $N={n_samples}$")
     fig.colorbar(im, ax=axes[2])
     # plt.show()
-    plt.savefig("./results/Complex_Tyler_gradient_estimation.png")
+    plt.savefig("./results/Tyler_gradient_estimation.png")

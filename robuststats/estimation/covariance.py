@@ -1,9 +1,9 @@
 '''
-File: elliptical.py
+File: covariance.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 3:31:06 pm
+Last Modified: Thursday, 9th December 2021 5:12:58 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -82,10 +82,127 @@ def get_normalisation_function(normalisation=None):
 # Real-valued estimators
 # -----------------------------------------------------------------------------
 @_deprecate_positional_args
+def _huber_m_estimator_function(s, a, b):
+    """Huber M-estimator function as defined for example in
+    > Contributions aux traitements robustes pour les systèmes multi-capteurs
+    > Bruno Meriaux, 2020
+    > p. 44, eq (3.13)
+    
+    It consists of the function defined by the equation :
+    $$
+    u(s)=\left\{\begin{array}{cc}
+    \frac{1}{b} & \text { for } s \leq a \\
+    \frac{a}{s b} & \text { for } s>a
+    \end{array} \quad \text { with } \quad a \geq 0 \text { and } b>0\right.
+    $$
+
+    Parameters
+    ----------
+    s : array-like
+        input data
+    a : float
+        value at which we shift from no ponderation to inverse ponderation
+    b : float
+        a tuning parameter
+
+    Returns
+    -------
+    array-like
+        array of the same shape as input with values that have been scaled depending
+        on the tuning parameters
+
+    """
+    if a<0 or b<=0:
+        raise AssertionError(
+            f"Error, a and b can't be negative : a={a}, b={b}"
+        )
+    if np.isinf(a):
+        return (1/b)*np.ones(s.shape, dtype=s.dtype)
+    else:
+        return (1/b)*(s<=a) + (a/(s*b))*(s>a)
+
+@_deprecate_positional_args
+def huber_m_estimator_fixed_point(X, a, b, init=None, tol=1e-4,
+                                iter_max=30, verbosity=False, **kwargs):
+    """Perform Huber's M-estimation of covariance matrix by fixed-point algorithm.
+    Data is always assumed to be centered and real-valued.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+    a : float
+        value at which we shift from no ponderation to inverse ponderation
+    b : float
+        tuning parameter
+    init : array-like of shape (n_features, n_features), optional
+        Initial point of algorithm, by default None.
+    tol : float, optional
+        tolerance for convergence of algorithm, by default 1e-4.
+    iter_max : int, optional
+        number of maximum iterations, by default 30.
+    verbosity : bool, optional
+        show progress of algorithm at each iteration, by default False
+    Returns
+    -------
+    array-like of shape (n_features, n_features)
+        estimate.
+    float
+        final error between two iterations.
+    int
+        number of iterations done.
+    """
+    
+    # Initialisation
+    N, p = X.shape
+    
+
+    if init is None:
+        sigma = empirical_covariance(X, assume_centered=True)
+    else:
+        sigma = init
+    delta = np.inf  # Distance between two iterations
+    iteration = 0
+
+    if verbosity:
+        pbar_v = tqdm(total=iter_max)
+
+    while (delta > tol) and (iteration < iter_max):
+        # compute expression of Tyler estimator
+        temp = invsqrtm(sigma)@X.T
+        tau = np.einsum('ij,ji->i', temp.T, temp)
+        tau = _huber_m_estimator_function(tau, a, b)
+        temp = X.T / np.sqrt(tau)
+        sigma_new = (1/N) * temp@temp.T
+
+        # condition for stopping
+        delta = la.norm(sigma_new - sigma) / la.norm(sigma)
+        iteration += 1
+
+        # updating sigma
+        sigma = sigma_new
+
+        if verbosity:
+            pbar_v.update()
+            pbar_v.set_description(f'(err={delta})', refresh=True)
+
+    if verbosity:
+        pbar_v.close()
+
+
+    if iteration == iter_max:
+        logging.warning('Estimation algorithm did not converge')
+
+    return sigma, delta, iteration
+
+
+@_deprecate_positional_args
 def student_t_mle_fixed_point(X, df, init=None, tol=1e-4,
                                 iter_max=30, verbosity=False, **kwargs):
     """Perform Student-t's fixed-point estimation of covariance matrix.
     Data is always assumed to be centered and real-valued.
+
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
@@ -154,7 +271,7 @@ def student_t_mle_fixed_point(X, df, init=None, tol=1e-4,
 
     return sigma, delta, iteration
 
-
+@_deprecate_positional_args
 def _generate_realTyler_cost_function(X):
     """Generate cost function for gradient descent for Tyler cost function
     as given in eq. (25) of:
@@ -177,7 +294,7 @@ def _generate_realTyler_cost_function(X):
         return Tyler_cost_real(X, Q, autograd=True)
     return cost
 
-
+@_deprecate_positional_args
 def _generate_Tyler_egrad(X, cost):
     """Generate euclidean gradient corresponding to Tyler cost function.
 
@@ -211,6 +328,7 @@ def tyler_shape_matrix_naturalgradient(X, init=None, normalisation='None',
     """Perform Tyler's estimation of shape matrix with natural 
     gradient on SPD manifold using pymanopt.
     Data is always assumed to be centered.
+
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
@@ -329,6 +447,111 @@ def tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
     return sigma/S(sigma), delta, iteration
 
 
+class HuberMEstimator(RealEmpiricalCovariance):
+    """Huber's M-estimation of covariance matrix by fixed-point algorithm.
+    Data is always assumed to be centered and real-valued.
+    
+    Estimator is solution of the equation :
+    $$
+    \widehat{\mathbf{M}}_{\mathrm{Hub}}=
+    \frac{1}{N b} \sum_{n=1}^{N} \mathbf{z}_{n} \mathbf{z}_{n}^{\mathrm{T}} 
+    \mathbb{1}_{\mathbf{z}_{n}^{\mathrm{T}} \widehat{\mathbf{M}}_{\mathrm{Hub}}^{-1} \mathbf{z}_{n} \leq a}
+    +
+    \frac{1}{N b} \sum_{n=1}^{N} \frac{\mathbf{z}_{n} \mathbf{z}_{n}^{\mathrm{T}}}{\mathbf{z}_{n}^{\mathrm{T}} \widehat{\mathbf{M}}_{\mathrm{Hub}}^{-1} \mathbf{z}_{n}}
+    \mathbb{1}_{\mathbf{z}_{n}^{\mathrm{T}} \widehat{\mathbf{M}}_{\mathrm{Hub}}^{-1} \mathbf{z}_{n} \geq a}.
+    $$
+    
+    For details, see:
+    > Contributions aux traitements robustes pour les systèmes multi-capteurs
+    > Bruno Meriaux, 2020
+    > p. 44, eq (3.14)
+    
+    Parameters
+    ----------
+    a : float
+        value at which we shift from no ponderation to inverse ponderation.
+    b : float, optional
+        tuning parameter, by default 1.
+        Can be estimated by using estimate_a emthod on a dataset.
+    iter_max : int, optional
+        number of maximum iterations of algorithm, by default 100.
+    verbosity : bool, optional
+        show a progressbar of algorithm, by default False.
+
+    Attributes
+    ----------
+    covariance_ : ndarray of shape (n_features, n_features)
+        Estimated covariance matrix
+    err_ : float
+        final error between two iterations.
+    iteration_ : int
+        number of iterations done for estimation.
+    """
+    def __init__(self, a, b=1, tol=1e-4, 
+                 iter_max=100,
+                 verbosity=False):
+        super().__init__()
+        self.a = a
+        self.b = b
+        self.verbosity = verbosity
+        self.tol = tol
+        self.iter_max = iter_max
+
+        self.err_ = np.inf
+        self.iteration_ = 0
+        
+    def estimate_a(self, X, q=0.9):
+        """Estimate value of a parameter by using a quantile of the values of:
+        $$
+        \mathbf{z}_{n}^{\mathrm{T}\mathbf{z}_{n}
+        $$
+        for n going from 1 to the number of samples.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+          Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+        q : float, optional
+            Quantile between 0 and 1, by default 0.9
+        """
+        X_temp = np.nan_to_num(X)
+        tau = np.einsum('ij,ji->i', X, X.T)
+        self.a = np.quantile(tau, q)
+
+    def fit(self, X, y=None, init=None, **kwargs):
+        """Fits the Student-t M-estimator of covariance matrix.
+        
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+          Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+        y : Ignored
+            Not used, present for API consistency by convention.
+        init : array-like of shape (n_features, n_features), optional
+            Initial point to start the estimation.
+        Returns
+        -------
+        self : object
+        """
+        if self.iteration_ > 0 and self.verbosity:
+            logging.warning("Overwriting previous fit.")
+        X = self._validate_data(X)
+        covariance, err, iteration = huber_m_estimator_fixed_point(
+            X, self.a, self.b, init=init, tol=self.tol,
+            iter_max=self.iter_max, verbosity=self.verbosity, **kwargs
+        )
+        self._set_covariance(covariance)
+        self.err_ = err
+        self.iteration_ = iteration
+        return self
+
+    def score(self, X_test, y=None):
+        # TODO : implement score of Huber M-estimator
+        raise NotImplementedError("Sorry : score isn't implemented yet")
+
+
 class CenteredStudentMLE(RealEmpiricalCovariance):
     """Student-t's estimation of Covariance matrix when data is
     centered and the degrees of freedom is known. 
@@ -397,7 +620,7 @@ class CenteredStudentMLE(RealEmpiricalCovariance):
         self.iteration_ = iteration
         return self
 
-    def score(self, X_test, y=None, model='Gaussian'):
+    def score(self, X_test, y=None):
         if self.iteration_ ==0:
             logging.error("Estimator hasn't been fitted yet !")
             return None
@@ -510,6 +733,82 @@ class TylerShapeMatrix(RealEmpiricalCovariance):
 # -----------------------------------------------------------------------------
 # Complex-valued estimators
 # -----------------------------------------------------------------------------
+@_deprecate_positional_args
+def complex_huber_m_estimator_fixed_point(X, a, b, init=None, tol=1e-4,
+                                iter_max=30, verbosity=False, **kwargs):
+    """Perform Huber's M-estimation of covariance matrix by fixed-point algorithm.
+    Data is always assumed to be centered and complex-valued.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+    a : float
+        value at which we shift from no ponderation to inverse ponderation
+    b : float
+        tuning parameter
+    init : array-like of shape (n_features, n_features), optional
+        Initial point of algorithm, by default None.
+    tol : float, optional
+        tolerance for convergence of algorithm, by default 1e-4.
+    iter_max : int, optional
+        number of maximum iterations, by default 30.
+    verbosity : bool, optional
+        show progress of algorithm at each iteration, by default False
+    Returns
+    -------
+    array-like of shape (n_features, n_features)
+        estimate.
+    float
+        final error between two iterations.
+    int
+        number of iterations done.
+    """
+    
+    # Initialisation
+    N, p = X.shape
+    
+
+    if init is None:
+        sigma = complex_empirical_covariance(X, assume_centered=True)
+    else:
+        sigma = init
+    delta = np.inf  # Distance between two iterations
+    iteration = 0
+
+    if verbosity:
+        pbar_v = tqdm(total=iter_max)
+
+    while (delta > tol) and (iteration < iter_max):
+        # compute expression of Tyler estimator
+        temp = invsqrtm(sigma)@X.T
+        tau = np.einsum('ij,ji->i', temp.conj().T, temp)
+        tau = _huber_m_estimator_function(np.real(tau), a, b)
+        temp = X.T / np.sqrt(tau)
+        sigma_new = (1/N) * temp@temp.conj().T
+
+        # condition for stopping
+        delta = la.norm(sigma_new - sigma) / la.norm(sigma)
+        iteration += 1
+
+        # updating sigma
+        sigma = sigma_new
+
+        if verbosity:
+            pbar_v.update()
+            pbar_v.set_description(f'(err={delta})', refresh=True)
+
+    if verbosity:
+        pbar_v.close()
+
+
+    if iteration == iter_max:
+        logging.warning('Estimation algorithm did not converge')
+
+    return sigma, delta, iteration
+
+
 @_deprecate_positional_args
 def complex_student_t_mle_fixed_point(X, df, init=None, tol=1e-4,
                                 iter_max=30, verbosity=False, **kwargs):
@@ -727,6 +1026,111 @@ def complex_tyler_shape_matrix_fixedpoint(X, init=None, tol=1e-4,
         logging.warning('Estimation algorithm did not converge')
 
     return sigma/S(sigma), delta, iteration
+
+
+class ComplexHuberMEstimator(ComplexEmpiricalCovariance):
+    """Huber's M-estimation of covariance matrix by fixed-point algorithm.
+    Data is always assumed to be centered and complex-valued.
+    
+    Estimator is solution of the equation :
+    $$
+    \widehat{\mathbf{M}}_{\mathrm{Hub}}=
+    \frac{1}{N b} \sum_{n=1}^{N} \mathbf{z}_{n} \mathbf{z}_{n}^{\mathrm{H}} 
+    \mathbb{1}_{\mathbf{z}_{n}^{\mathrm{H}} \widehat{\mathbf{M}}_{\mathrm{Hub}}^{-1} \mathbf{z}_{n} \leq a}
+    +
+    \frac{1}{N b} \sum_{n=1}^{N} \frac{\mathbf{z}_{n} \mathbf{z}_{n}^{\mathrm{H}}}{\mathbf{z}_{n}^{\mathrm{H}} \widehat{\mathbf{M}}_{\mathrm{Hub}}^{-1} \mathbf{z}_{n}}
+    \mathbb{1}_{\mathbf{z}_{n}^{\mathrm{H}} \widehat{\mathbf{M}}_{\mathrm{Hub}}^{-1} \mathbf{z}_{n} \geq a}.
+    $$
+    
+    For details, see:
+    > Contributions aux traitements robustes pour les systèmes multi-capteurs
+    > Bruno Meriaux, 2020
+    > p. 44, eq (3.14)
+    
+    Parameters
+    ----------
+    a : float
+        value at which we shift from no ponderation to inverse ponderation.
+    b : float, optional
+        tuning parameter, by default 1.
+        Can be estimated by using estimate_a emthod on a dataset.
+    iter_max : int, optional
+        number of maximum iterations of algorithm, by default 100.
+    verbosity : bool, optional
+        show a progressbar of algorithm, by default False.
+
+    Attributes
+    ----------
+    covariance_ : ndarray of shape (n_features, n_features)
+        Estimated covariance matrix
+    err_ : float
+        final error between two iterations.
+    iteration_ : int
+        number of iterations done for estimation.
+    """
+    def __init__(self, a, b=1, tol=1e-4, 
+                 iter_max=100,
+                 verbosity=False):
+        super().__init__()
+        self.a = a
+        self.b = b
+        self.verbosity = verbosity
+        self.tol = tol
+        self.iter_max = iter_max
+
+        self.err_ = np.inf
+        self.iteration_ = 0
+        
+    def estimate_a(self, X, q=0.9):
+        """Estimate value of a parameter by using a quantile of the values of:
+        $$
+        \mathbf{z}_{n}^{\mathrm{H}\mathbf{z}_{n}
+        $$
+        for n going from 1 to the number of samples.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+          Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+        q : float, optional
+            Quantile between 0 and 1, by default 0.9
+        """
+        X_temp = np.nan_to_num(X)
+        tau = np.einsum('ij,ji->i', X, X.T.conj())
+        self.a = np.quantile(np.real(tau), q)
+
+    def fit(self, X, y=None, init=None, **kwargs):
+        """Fits the Student-t M-estimator of covariance matrix.
+        
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+          Training data, where n_samples is the number of samples and
+          n_features is the number of features.
+        y : Ignored
+            Not used, present for API consistency by convention.
+        init : array-like of shape (n_features, n_features), optional
+            Initial point to start the estimation.
+        Returns
+        -------
+        self : object
+        """
+        if self.iteration_ > 0 and self.verbosity:
+            logging.warning("Overwriting previous fit.")
+        X = self._validate_data(X)
+        covariance, err, iteration = complex_huber_m_estimator_fixed_point(
+            X, self.a, self.b, init=init, tol=self.tol,
+            iter_max=self.iter_max, verbosity=self.verbosity, **kwargs
+        )
+        self._set_covariance(covariance)
+        self.err_ = err
+        self.iteration_ = iteration
+        return self
+
+    def score(self, X_test, y=None):
+        # TODO : implement score of Huber M-estimator
+        raise NotImplementedError("Sorry : score isn't implemented yet")
 
 
 class ComplexCenteredStudentMLE(ComplexEmpiricalCovariance):

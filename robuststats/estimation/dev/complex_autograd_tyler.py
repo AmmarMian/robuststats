@@ -3,7 +3,7 @@ File: complex_autograd_tyler.py
 File Created: Tuesday, 2nd November 2021 10:44:53 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 18th November 2021 4:28:02 pm
+Last Modified: Thursday, 9th December 2021 3:53:11 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -16,7 +16,7 @@ from pymanopt.function import Callable
 from pymanopt import Problem
 from pymanopt.solvers import SteepestDescent, ConjugateGradient
 from pymanopt.manifolds.hpd import SpecialHermitianPositiveDefinite, HermitianPositiveDefinite
-from robuststats.estimation.elliptical import get_normalisation_function, ComplexTylerShapeMatrix
+from robuststats.estimation.covariance import get_normalisation_function, ComplexTylerShapeMatrix
 from robuststats.models.probability import complex_multivariate_normal
 from robuststats.utils.linalg import ToeplitzMatrix, invsqrtm
 

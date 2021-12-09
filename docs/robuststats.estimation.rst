@@ -11,10 +11,10 @@ robuststats.estimation.base
    :show-inheritance:
 
 
-robuststats.estimation.elliptical
+robuststats.estimation.covariance
 ---------------------------------
 
-.. automodule:: robuststats.estimation.elliptical
+.. automodule:: robuststats.estimation.covariance
    :members:
    :undoc-members:
    :show-inheritance:
