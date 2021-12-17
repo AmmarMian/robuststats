@@ -3,7 +3,7 @@ File: covariance.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 17th December 2021 4:58:39 pm
+Last Modified: Friday, 17th December 2021 5:26:57 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -601,7 +601,7 @@ class CenteredStudentMLE(RealEmpiricalCovariance):
             logging.error("Estimator hasn't been fitted yet !")
             return None
         logpdf = multivariate_t(
-            shape=self.covariance_, df=self.df).logpdf(X)
+            shape=self.covariance_, df=self.df).logpdf(X_test)
         return np.sum(logpdf)
 
 
@@ -1179,7 +1179,7 @@ class ComplexCenteredStudentMLE(ComplexEmpiricalCovariance):
             logging.error("Estimator hasn't been fitted yet !")
             return None
         logpdf = complex_multivariate_t(
-            shape=self.covariance_, df=self.df).logpdf(X)
+            shape=self.covariance_, df=self.df).logpdf(X_test)
         return np.sum(logpdf)
 
 
