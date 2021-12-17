@@ -3,7 +3,7 @@ File: base.py
 File Created: Sunday, 20th June 2021 5:00:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Wednesday, 8th December 2021 5:19:43 pm
+Last Modified: Friday, 10th December 2021 4:25:03 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -325,13 +325,14 @@ def complex_empirical_covariance(X, *, assume_centered=False):
                       "You may want to reshape your data array")
 
     if assume_centered:
-        covariance = np.dot(X.T.conj(), X) / X.shape[0]
+        covariance = np.dot(X.T, X.conj()) / X.shape[0]
     else:
         covariance = np.cov(X.T, bias=1)
 
     if covariance.ndim == 0:
         covariance = np.array([[covariance]])
     return covariance
+
 
 class RealEmpiricalCovariance(EmpiricalCovariance, TransformerMixin):
     """Scikit-learn Empirical covariance + transform to get the covariance after.

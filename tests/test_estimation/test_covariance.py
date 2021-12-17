@@ -3,7 +3,7 @@ File: test_elliptical.py
 File Created: Sunday, 20th June 2021 9:16:15 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 9th December 2021 5:35:08 pm
+Last Modified: Friday, 17th December 2021 5:12:21 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -87,7 +87,7 @@ def test_huber_m_estimator_fixed_point():
 
     a = np.random.randn(n_samples, n_features)
 
-    covariance, _, _ = huber_m_estimator_fixed_point(a, a=1, b=1)
+    covariance, _, _ = huber_m_estimator_fixed_point(a, q=0.3)
     assert np.isrealobj(covariance)
     assert covariance.shape == (n_features, n_features)
     assert check_Symmetric(covariance)
@@ -172,7 +172,7 @@ def test_HuberMEstimator():
     covariance = generate_covariance(n_features)
     model = multivariate_t(shape=covariance, df=df)
     X = model.rvs(size=n_samples)
-    estimator = HuberMEstimator(a=1)
+    estimator = HuberMEstimator(q=0.3)
     estimator.fit(X)
     covariance_est = estimator.covariance_
     assert np.isrealobj(covariance_est)
@@ -185,7 +185,7 @@ def test_HuberMEstimator():
     covariance = generate_covariance(n_features)
     model = multivariate_t(shape=covariance, df=df)
     X = model.rvs(size=n_samples)
-    estimator = HuberMEstimator(a=1, iter_max=1000)
+    estimator = HuberMEstimator(q=0.3, iter_max=1000)
     estimator.fit(X)
     np_test.assert_array_almost_equal(estimator.covariance_,
                                       covariance, decimal=1)
@@ -324,7 +324,7 @@ def test_complex_huber_m_estimator_fixed_point():
     X = np.random.randn(n_samples, n_features) +\
           1j * np.random.randn(n_samples, n_features)
 
-    covariance, _, _ = complex_huber_m_estimator_fixed_point(X, a=1, b=1)
+    covariance, _, _ = complex_huber_m_estimator_fixed_point(X, q=0.3)
     assert np.iscomplexobj(covariance)
     assert covariance.shape == (n_features, n_features)
     assert check_Hermitian(covariance)
@@ -412,7 +412,7 @@ def test_ComplexHuberMEstimator():
     covariance = generate_complex_covariance(n_features)
     model = complex_multivariate_t(shape=covariance, df=df)
     X = model.rvs(size=n_samples)
-    estimator = ComplexHuberMEstimator(a=1)
+    estimator = ComplexHuberMEstimator(q=0.3)
     estimator.fit(X)
     covariance_est = estimator.covariance_
     assert np.iscomplexobj(covariance_est)
@@ -425,7 +425,7 @@ def test_ComplexHuberMEstimator():
     covariance = generate_complex_covariance(n_features)
     model = complex_multivariate_t(shape=covariance, df=df)
     X = model.rvs(size=n_samples)
-    estimator = ComplexHuberMEstimator(a=1, iter_max=1000)
+    estimator = ComplexHuberMEstimator(q=0.3, iter_max=1000)
     estimator.fit(X)
     np_test.assert_array_almost_equal(estimator.covariance_,
                                       covariance, decimal=1)
