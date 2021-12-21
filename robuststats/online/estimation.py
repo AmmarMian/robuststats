@@ -3,13 +3,13 @@ File: estimation.py
 File Created: Thursday, 8th July 2021 4:01:38 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Thursday, 8th July 2021 5:56:06 pm
+Last Modified: Tuesday, 21st December 2021 4:46:18 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
 
-from robuststats.estimation.base import ComplexEmpiricalCovariance
+from robuststats.estimation.covariance.base import ComplexEmpiricalCovariance
 import logging
 from tqdm import tqdm
 

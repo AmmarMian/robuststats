@@ -1,5 +1,5 @@
 import robuststats.detection
-import robuststats.estimation.base
+import robuststats.estimation.covariance
 import robuststats.estimation.covariance
 import robuststats.estimation.structured
 import robuststats.learning

@@ -3,7 +3,7 @@ File: covariance.py
 File Created: Sunday, 20th June 2021 8:38:42 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 17th December 2021 5:26:57 pm
+Last Modified: Tuesday, 21st December 2021 4:46:18 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
@@ -18,7 +18,7 @@ from scipy.stats import chi2
 
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.covariance import EmpiricalCovariance, empirical_covariance
-from .base import complex_empirical_covariance, ComplexEmpiricalCovariance,\
+from .covariance.base import complex_empirical_covariance, ComplexEmpiricalCovariance,\
                 RealEmpiricalCovariance
 from ..models.mappings import arraytoreal, arraytocomplex, covariancetocomplex
 from ..models.manifolds import HermitianPositiveDefinite

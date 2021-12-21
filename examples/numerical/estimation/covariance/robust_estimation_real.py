@@ -3,7 +3,7 @@ File: robust_estimation_real.py
 File Created: Friday, 9th July 2021 10:07:35 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 17th December 2021 4:59:17 pm
+Last Modified: Tuesday, 21st December 2021 5:40:06 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Examples of covariance estimation with various estimators
@@ -30,14 +30,14 @@ if __name__ == '__main__':
     np.random.seed(base_seed)
 
     # Data parameters
-    n_features = 100
-    n_samples = 1000
+    n_features = 20
+    n_samples = 80
 
     print("Generating data")
-    df = 1
+    df = 3
     normalisation = "trace"
     S = get_normalisation_function(normalisation)
-    covariance = ToeplitzMatrix(0.95, n_features, dtype=float)
+    covariance = ToeplitzMatrix(0.97, n_features, dtype=float)
     # covariance = covariance / S(covariance)
 
     model = multivariate_t(shape=covariance, df=df)
@@ -52,11 +52,11 @@ if __name__ == '__main__':
     estimator_tyler.fit(X)
     
     print("Performing Student-t MLE estimation of covariance matrix")
-    estimator_student = CenteredStudentMLE(df=3, verbosity=True, iter_max=100)
+    estimator_student = CenteredStudentMLE(df=3, verbosity=True, iter_max=1000)
     estimator_student.fit(X)
     
     print("Performing Huber's M-estimation of covariance matrix")
-    estimator_huber = HuberMEstimator(q=1e-10, verbosity=True, iter_max=1000)
+    estimator_huber = HuberMEstimator(q=0.1, verbosity=True, iter_max=1000)
     estimator_huber.fit(X)
 
     backend = "matplotlib"

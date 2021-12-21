@@ -3,8 +3,8 @@ File: structured.py
 File Created: Sunday, 20th June 2021 4:47:02 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tue Jul 13 2021
-Modified By: Ammar Mian
+Last Modified: Tuesday, 21st December 2021 4:46:18 pm
+Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -21,7 +21,7 @@ from pymanopt import Problem
 from pymanopt.solvers import SteepestDescent, ConjugateGradient
 from sklearn.utils.validation import _deprecate_positional_args
 
-from .base import ComplexEmpiricalCovariance
+from .covariance.base import ComplexEmpiricalCovariance
 from ..models.probability import complex_multivariate_t
 from ..models.manifolds import KroneckerHermitianPositiveElliptical
 

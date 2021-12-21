@@ -3,7 +3,7 @@ File: robust_estimation_complex.py
 File Created: Friday, 9th July 2021 10:07:35 am
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Friday, 17th December 2021 5:10:03 pm
+Last Modified: Tuesday, 21st December 2021 5:50:52 pm
 Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Examples of covariance estimation with various estimators
@@ -13,11 +13,13 @@ Copyright 2021, Université Savoie Mont-Blanc
 '''
 
 import numpy as np
-from robuststats.estimation.covariance import ComplexTylerShapeMatrix, \
-    get_normalisation_function, ComplexCenteredStudentMLE, ComplexHuberMEstimator
+from robuststats.estimation.covariance import (
+    ComplexEmpiricalCovariance, ComplexTylerShapeMatrix,
+    get_normalisation_function, ComplexCenteredStudentMLE,
+    ComplexHuberMEstimator
+)
 from robuststats.models.probability import complex_multivariate_t
 from robuststats.utils.linalg import ToeplitzMatrix
-from robuststats.estimation.base import ComplexEmpiricalCovariance
 
 
 import logging
@@ -30,13 +32,13 @@ if __name__ == '__main__':
     np.random.seed(base_seed)
 
     # Data parameters
-    n_features = 50
+    n_features = 100
     n_samples = 500
 
     print("Generating data")
-    df = 3
+    df = 1
     normalisation = "trace"
-    S = get_normalisation_function(normalisation)
+    # S = get_normalisation_function(normalisation)
     covariance = ToeplitzMatrix(0.9+0.4j, n_features, dtype=complex)
     # covariance = covariance / S(covariance)
 
@@ -52,11 +54,11 @@ if __name__ == '__main__':
     estimator_tyler.fit(X)
     
     print("Performing Student-t MLE estimation of covariance matrix")
-    estimator_student = ComplexCenteredStudentMLE(df=3, verbosity=True, iter_max=100)
+    estimator_student = ComplexCenteredStudentMLE(df=3, verbosity=True, iter_max=1000)
     estimator_student.fit(X)
     
     print("Performing Huber's M-estimation of covariance matrix")
-    estimator_huber = ComplexHuberMEstimator(q=1e-14, verbosity=True, iter_max=100)
+    estimator_huber = ComplexHuberMEstimator(q=0.3, verbosity=True, iter_max=1000)
     estimator_huber.fit(X)
 
     backend = "matplotlib"

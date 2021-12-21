@@ -3,8 +3,8 @@ File: probability.py
 File Created: Monday, 21st June 2021 12:44:26 pm
 Author: Ammar Mian (ammar.mian@univ-smb.fr)
 -----
-Last Modified: Tue Jul 13 2021
-Modified By: Ammar Mian
+Last Modified: Tuesday, 21st December 2021 5:00:44 pm
+Modified By: Ammar Mian (ammar.mian@univ-smb.fr>)
 -----
 Copyright 2021, Université Savoie Mont-Blanc
 '''
@@ -89,13 +89,13 @@ def _check_parameters_array_complex_normal(X, mean, cov):
 class complex_multivariate_normal_frozen(multivariate_normal_frozen):
     """ Frozen model of complex_multivariate_normal."""
 
-    def __init__(self, mean=None, cov=1, allow_singular=False, seed=None,
+    def __init__(self, mean=None, cov=1, allow_singular=False, random_state=None,
                  maxpts=None, abseps=1e-5, releps=1e-5):
         self._mean_orig = mean
         self._cov_orig = cov
         mean, cov = _check_parameters_complex_normal(mean, cov)
         super(complex_multivariate_normal_frozen,
-              self).__init__(mean, cov, allow_singular, seed, maxpts,
+              self).__init__(mean, cov, allow_singular, random_state, maxpts,
                              abseps, releps)
 
     def logpdf(self, x):
@@ -130,14 +130,14 @@ class complex_multivariate_normal_gen(multivariate_normal_gen):
     def __init__(self, seed=None) -> None:
         super(complex_multivariate_normal_gen, self).__init__(seed)
 
-    def __call__(self, mean=None, cov=1, allow_singular=False, seed=None):
+    def __call__(self, mean=None, cov=1, allow_singular=False, random_state=None):
         """Create a frozen multivariate normal distribution.
         See `multivariate_normal_frozen` for more information.
         """
         return complex_multivariate_normal_frozen(
             mean, cov,
             allow_singular=allow_singular,
-            seed=seed)
+            random_state=random_state)
 
     def _process_quantiles(self, x, dim):
         """
@@ -309,12 +309,12 @@ class complex_multivariate_t_frozen(multivariate_t_frozen):
     """ Frozen model of complex_multivariate_t."""
 
     def __init__(self, loc=None, shape=1, df=1, allow_singular=False,
-                 seed=None):
+                 random_state=None):
         self._loc_orig = loc
         self._shape_orig = shape
         loc, shape = _check_parameters_complex_normal(loc, shape)
         super(complex_multivariate_t_frozen,
-              self).__init__(loc, shape, df, allow_singular, seed)
+              self).__init__(loc, shape, df, allow_singular, random_state)
 
     def logpdf(self, x):
         x, _, _ = _check_parameters_array_complex_normal(
@@ -340,18 +340,18 @@ class complex_multivariate_t_gen(multivariate_t_gen):
     distribution thanks to complex to real mappings.
     """
 
-    def __init__(self, seed=None) -> None:
-        super(complex_multivariate_t_gen, self).__init__(seed)
+    def __init__(self, random_state=None) -> None:
+        super(complex_multivariate_t_gen, self).__init__(random_state)
 
     def __call__(self, loc=None, shape=1, df=1, allow_singular=False,
-                 seed=None):
+                 random_state=None):
         """Create a frozen multivariate t-distribution.
         See `multivariate_t_frozen` for more information.
         """
         return complex_multivariate_t_frozen(
             loc, shape, df,
             allow_singular=allow_singular,
-            seed=seed)
+            random_state=random_state)
 
     def _process_quantiles(self, x, dim):
         """
